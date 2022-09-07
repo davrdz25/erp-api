@@ -165,8 +165,8 @@ export default class AccountModel {
             throw ({ Message: "Name cannot be empty" })
         }
 
-        if (_Account.Code && _Account.Code.length > 20) {
-            throw ({ Messge: "Code cannot be more than 20 characters" })
+        if (_Account.Code && _Account.Code.length > 25) {
+            throw ({ Messge: "Code cannot be more than 25 characters" })
         }
 
         if (_Account.Name && _Account.Name.length > 100) {
