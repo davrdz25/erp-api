@@ -1,0 +1,85 @@
+GET http://localhost:3001/api/v1/Countries 
+GET http://localhost:3001/api/v1/Banks
+GET http://localhost:3001/api/v1/Cards
+
+GET http://192.168.1.2:3001/api/v1/Accounts
+
+GET http://localhost:3001/api/v1/BankAccounts 
+GET http://localhost:3001/api/v1/PaymentCategories 
+GET http://localhost:3001/api/v1/Payments
+
+GET http://localhost:3001/api/v1/Accounts?Name=aho&ExactValues=N
+GET http://localhost:3001/api/v1/Accounts?Entry=1
+
+POST http://localhost:3001/api/v1/Payments HTTP/1.1
+content-Type: application/json
+
+{
+    "Prefix": "HBC",
+    "Number": 3,
+    "PayDate": "20220412",
+    "PayTime": "21:43",
+    "Type": 1,
+    "Category": 1,
+    "Account": 1,
+    "Ammount": 200,
+    "UserSign": -1,
+    "CreateDate": "20220228"
+}
+
+POST http://localhost:3001/api/v1/Banks HTTP/1.1
+content-Type: application/json
+
+{
+    "Code": "COPPEL",
+    "ShortName": "Coppel",
+    "UserSign": -1,
+    "CreateDate": "20220523"
+}
+
+POST http://localhost:3001/api/v1/BankAccounts HTTP/1.1
+content-Type: application/json
+
+{
+    "Code": "HEY001",
+    "Name": "Hey Smart",
+    "Bank": 1,
+    "Account": 1,
+    "UserSign": -1,
+    "CreateDate": "20220228"
+}
+
+POST http://192.168.1.2:3001/api/v1/Accounts
+content-Type: application/json
+
+{
+    "Code": "Test",
+    "Name": "Test",
+    "Level": 1,
+    "Father": -1,
+    "Type": 1,
+    "Balance": 0,
+    "PstableAccount": false,
+    "UserSign": -1,
+    "CreateDate": "20220225"
+}
+
+POST http://localhost:3001/api/v1/Cards HTTP/1.1
+content-Type: application/json
+
+{
+    "Code": "001",
+    "Name": "Cuentas Banco Azteca",
+    "Bank": 1,
+    "UserSign": -1,
+    "CreateDate": "20220228"
+}
+
+PUT  http://localhost:3001/api/v1/Banks HTTP/1.1
+content-Type: application/json
+
+{
+    "Code": "BBVA",
+    "SWIFTBIC": "BCMRMXMMPYM",
+    "UpdateDate": "20220523"
+}
