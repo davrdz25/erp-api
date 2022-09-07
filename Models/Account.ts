@@ -181,19 +181,13 @@ export default class AccountModel {
             throw ({ Message: "Invalid value Level" })
         }
 
-        if (_Account.Level === 1 && _Account.Father !== -1) {
-            throw ({ Message: "Level 1 account don't must have a father" })
+        if(_Account.Type > 0 && _Account.PostableAccount === "N"){
+            throw({Message: "Not title type must be postable"})
         }
 
-        if (_Account.Level !== 1 && _Account.Father === -1) {
-            throw ({ Message: "If account level is greater than 1, account must have a father" })
+        if(_Account.Type === -1 && _Account.PostableAccount === 'Y'){
+            throw({Message: "Postable account cannot be title type" })
         }
-
-        if(_Account.PostableAccount && _Account.Type !== -1){
-            throw({Message: "Account cannot be postable if type is None"})
-        }
-
-
         return new Promise((resolve, reject) => {
             Promise.all(([this.CodeExists(_Account.Code), this.NameExists(_Account.Name), this.FatherExists(_Account.Father) ])).
             then(([_CodeExists, _NameExists, _FatherExists]) => {

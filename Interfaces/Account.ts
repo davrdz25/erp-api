@@ -5,7 +5,7 @@ export default interface IAccount extends Base {
     Father: number
     Balance: number
     Type: number
-    PostableAccount: boolean
+    PostableAccount: string
 
     UpdateFather: boolean
     UpdateBalance: boolean
