@@ -570,3 +570,47 @@ BEGIN
 END
 GO
 /*
+
+ALTER PROCEDURE CreateAccount
+    @Name NVARCHAR,
+    @Level INT,
+    @Father INT,
+    @Type INT,
+    @Postable CHAR,
+    @Balance INT = 0,
+    @UserSign INT = -1,
+    @CreateDate DATETIME
+AS
+DECLARE @MaxCode INT
+DECLARE @MaxFather INT
+DECLARE @Code NVARCHAR(18)
+DECLARE @SubtrCode INT = @Level * 3
+ declare @codeE NVARCHAR
+
+    IF @Level = 1 BEGIN
+        SELECT @MaxCode = MAX("Entry") + 1 FROM Accounts WHERE "Level" = 1
+
+        IF LEN(@MaxCode) = 1 BEGIN
+        SET @Code = '00'
+        END
+
+        IF LEN(@MaxCode) = 2 BEGIN
+        SET @Code = '0' + CAST(@MaxCode AS NVARCHAR) + '000000000000000'
+        END
+
+        IF LEN(@MaxCode) = 3 BEGIN
+        SET @Code = CAST(@MaxCode AS NVARCHAR) + '000000000000000'
+        END
+    END
+    IF @Level > 1 BEGIN
+        SELECT @codeE = SUBSTRING("Code",3,3) FROM Accounts WHERE "Level" = @Level
+        print @codeE
+    END
+    print @Code
+
+GO
+-- example to execute the stored procedure we just created
+EXECUTE CreateAccount 'Name', 2, -1, -1, 'N',0,-1,'20220907'
+GO
+
+SELECT  max(cast(SUBSTRING("Code",2*3,3) as int)) + 1 FROM Accounts WHERE "Level" = 2
