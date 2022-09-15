@@ -2,6 +2,12 @@ import { IResult } from "mssql";
 import MSSQLService from "../Services/Database";
 import IAccount from "../Interfaces/Account";
 
+interface StoredProcedureOutput {
+    ErrNumber: number,
+    ProcName: string,
+    State: string,
+    Message: string; 
+}
 export default class AccountModel {
 
     public static GetAll() {
@@ -102,7 +108,7 @@ export default class AccountModel {
         })
     }
 
-    public static CodeExists(_Code: string) {
+    public static CodeExists(_Code: string | undefined) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
             + "WHERE \"Code\" = '" + _Code + "'"
@@ -141,9 +147,9 @@ export default class AccountModel {
     public static FatherExists(_Entry: number) {
         return new Promise((resolve, reject) => {
             const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
-            + "FROM Accounts "
-            + "WHERE  \"Entry\" = " + _Entry
-            
+                + "FROM Accounts "
+                + "WHERE  \"Entry\" = " + _Entry
+
             MSSQLService.RunQuey(SQLQuery).then((_Count) => {
                 if (_Count.recordset[0].Register !== 0) {
                     resolve(true)
@@ -157,10 +163,6 @@ export default class AccountModel {
     }
 
     public static Create(_Account: IAccount) {
-        if (!_Account.Code) {
-            throw ({ Message: "Code cannot be empty" })
-        }
-
         if (!_Account.Name) {
             throw ({ Message: "Name cannot be empty" })
         }
@@ -181,67 +183,48 @@ export default class AccountModel {
             throw ({ Message: "Invalid value Level" })
         }
 
-        if(_Account.Type > 0 && _Account.PostableAccount === "N"){
-            throw({Message: "Not title type must be postable"})
+        if ((_Account.Type > 0 && _Account.Type !== -1) && _Account.PostableAccount === "N") {
+            throw ({ Message: "Not title type must be postable" })
         }
 
-        if(_Account.Type === -1 && _Account.PostableAccount === 'Y'){
-            throw({Message: "Postable account cannot be title type" })
+        if (_Account.Type === -1 && _Account.PostableAccount === 'Y') {
+            throw ({ Message: "Postable account cannot be title type" })
         }
         return new Promise((resolve, reject) => {
-            Promise.all(([this.CodeExists(_Account.Code), this.NameExists(_Account.Name), this.FatherExists(_Account.Father) ])).
-            then(([_CodeExists, _NameExists, _FatherExists]) => {
-                if (_CodeExists) {
-                    throw({ Message: "Code already exists" })
-                }
+            Promise.all(([this.NameExists(_Account.Name), this.FatherExists(_Account.Father)])).
+                then(([_NameExists, _FatherExists]) => {
+                    if (_NameExists) {
+                        throw ({ Message: "Name already exists" })
+                    }
 
-                if (_NameExists) {
-                    throw({ Message: "Name already exists" })
-                }
+                    if (_Account.Father !== -1 && _Account.Level !== 1) {
+                        if (!_FatherExists) {
+                            throw ({ Message: "Father doesn't exists" })
+                        }
+                    }
                 
-                if(_Account.Father !== -1 && _Account.Level !== 1){
-                    if (!_FatherExists) {
-                        throw({ Message: "Father doesn't exists" })
-                    }
-                }
+                    const SQLQuery = "EXECUTE CreateAccount" +
+                        "'" + _Account.Name + "', "
+                        + _Account.Level + ", "
+                        + _Account.Father + ", "
+                        + _Account.Type + ", "
+                        + "'" + _Account.PostableAccount + "', "
+                        + (_Account.Balance ? _Account.Balance : 0) + ", "
+                        + _Account.UserSign + ", "
+                        + "'" + _Account.CreateDate + "'"
 
-                const SQLQuery = "INSERT INTO Accounts "
-                    + "( \"Entry\", "
-                    + "\"Code\", "
-                    + "\"Name\", "
-                    + "\"Level\", "
-                    + "Father, "
-                    + "\"Type\", "
-                    + "PostableAccount, "
-                    + "Balance, "
-                    + "UserSign, "
-                    + "CreateDate "
-                    + ") VALUES ("
-                    + "(SELECT ISNULL(MAX(\"Entry\"), 0) + 1 \"Entry\" FROM Accounts), "
-                    + "'" + _Account.Code + "', "
-                    + "'" + _Account.Name + "', "
-                    + _Account.Level + ", "
-                    + _Account.Father + ", "
-                    + _Account.Type + ", "
-                    + (_Account.PostableAccount ? "'Y', " : "'N', ")
-                    + (_Account.Balance ? _Account.Balance :  0 ) + ", "
-                    + _Account.UserSign + ", "
-                    + "'" + _Account.CreateDate + "'"
-                    + ")"
-                console.log(SQLQuery)
-                MSSQLService.RunQuey(SQLQuery).then((_Created) => {
-                    if (_Created.rowsAffected[0] === 1) {
-                        resolve(true)
-                    } else {
-                        resolve(false)
-                    }
+                    MSSQLService.RunQuey(SQLQuery).then((_Created:IResult<StoredProcedureOutput>) => {
+                        if (_Created.recordset[0].ErrNumber === 500) {
+                            reject({ Message: _Created.recordset })
+                        }
+                        resolve(_Created.recordset)
+                    }).catch((_Err) => {
+                        reject(_Err)
+                    })
+
                 }).catch((_Err) => {
                     reject(_Err)
                 })
-
-            }).catch((_Err) => {
-                reject(_Err)
-            })
         })
     }
 
@@ -276,12 +259,12 @@ export default class AccountModel {
             }
         }
 
-        if(_Account.PostableAccount && _Account.Type === -1){
-            throw({Message: "Account cannot be postable if type is None"})
+        if (_Account.PostableAccount && _Account.Type === -1) {
+            throw ({ Message: "Account cannot be postable if type is None" })
         }
 
-        if(_Account.Type === -1 && !_Account.PostableAccount){
-            throw({Message: "If Type is None account must be postable"})
+        if (_Account.Type === -1 && !_Account.PostableAccount) {
+            throw ({ Message: "If Type is None account must be postable" })
         }
 
         return new Promise((resolve, reject) => {
@@ -289,17 +272,17 @@ export default class AccountModel {
                 + (_Account.Name ? + "\"Name\" = '" + _Account.Name + "', " : "")
                 + (_Account.UpdateFather ? "FatherAcct = " + _Account.Father + ", " : "")
                 + (_Account.UpdateBalance ? "Balance = '" + (_Account.Balance ? _Account.Balance : 0) + ", " : "")
-                + (_Account.Level !== 0 ? + "\"Level\" = " + _Account.Level + ", " : "")                
+                + (_Account.Level !== 0 ? + "\"Level\" = " + _Account.Level + ", " : "")
                 + "UpdateDate = '" + _Account.UpdateDate + "'"
                 + "WHERE AcctCode = '" + _Account.Code + "'"
 
             Promise.all(([this.CodeExists(_Account.Code), this.NameExists(_Account.Name)])).then(([_CodeExists, _NameExists]) => {
                 if (!_CodeExists) {
-                    throw({ Message: "Code doesn't exists" })
+                    throw ({ Message: "Code doesn't exists" })
                 }
 
                 if (_NameExists) {
-                    throw({ Message: "Name already exists" })
+                    throw ({ Message: "Name already exists" })
                 }
 
                 MSSQLService.RunQuey(SQLQuery).then((_Updated) => {

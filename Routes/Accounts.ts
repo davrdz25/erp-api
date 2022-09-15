@@ -2,6 +2,13 @@ import { Body, Get, JsonController, Post, Put, QueryParams,Res } from "routing-c
 import IAccount from "../Interfaces/Account";
 import AccountModel from "../Models/Account";
 
+interface StoredProcedureOutput {
+    ErrNumber: number,
+    ProcName: string,
+    State: string,
+    Message: string; 
+}
+
 @JsonController('Accounts')
 export default class AccountRoute {
 
@@ -24,13 +31,9 @@ export default class AccountRoute {
 
     @Post()
     public Add(@Body({ required: true }) NewAccount: IAccount, @Res() response: any){
-        return AccountModel.Create(NewAccount).then((_Created) => {
-            if (_Created) {
-                return response.status(200).send({ Message: "Account Created" })
-            } else {
-                return response.status(400).send({ Message: "Account can't be created" })
-            }
-        }).catch((_Err) => {
+        return AccountModel.Create(NewAccount).then((_Created: any) => {
+                return response.status(200).send(_Created)
+        }).catch((_Err: StoredProcedureOutput) => {
             return response.status(500).send(_Err)
         })
     }

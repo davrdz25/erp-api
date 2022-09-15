@@ -49,17 +49,16 @@ content-Type: application/json
     "CreateDate": "20220228"
 }
 
-POST http://192.168.1.2:3001/api/v1/Accounts
+POST http://localhost:3001/api/v1/Accounts
 content-Type: application/json
 
 {
-    "Code": "Test",
     "Name": "Test",
     "Level": 1,
     "Father": -1,
-    "Type": 1,
+    "Type": -1,
     "Balance": 0,
-    "PstableAccount": false,
+    "PostableAccount": "N",
     "UserSign": -1,
     "CreateDate": "20220225"
 }
