@@ -561,31 +561,61 @@ ALTER PROCEDURE CreateAccount
     @CreateDate DATETIME
 AS
     DECLARE @Code NVARCHAR(18)
+    DECLARE @Sequential INT
+    DECLARE @BaseCode NVARCHAR(18)
+    DECLARE @Prefix  NVARCHAR(18)
+    
+    IF EXISTS(SELECT "Name" FROM "Accounts" WHERE "Name" = @Name) BEGIN
+        SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message';  
+        RETURN 
+    END 
 
     IF  @Level = 1 BEGIN
-        DECLARE @Sequential INT
-
         SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = 1
     
-        SET @Code = CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')) + '000000000000000'
+        SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
 
         BEGIN TRY
-            IF EXISTS(SELECT "Name" FROM "Accounts" WHERE "Name" = @Name) BEGIN
-                SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','S' 'State','Name already exists' 'Message';   
-            END 
-            ELSE BEGIN
             INSERT INTO Accounts ("Entry", "Code", "Name", "Level", Father, "Type", PostableAccount, Balance, UserSign, CreateDate ) 
             VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, @UserSign, @CreateDate)
 
-            SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message';  
-            END
-        END TRY 
-        
+            SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message';
+            RETURN
+
+            END TRY
+            BEGIN CATCH
+                SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message'; 
+                THROW  
+        END CATCH
+    END
+    ELSE BEGIN 
+        DECLARE @FatherCode NVARCHAR(18)
+
+        IF NOT EXISTS(SELECT "Code" FROM "Accounts" WHERE "Entry" = @Father) BEGIN
+            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Father doesn''t exists' AS 'Message'; 
+            RETURN
+        END
+
+        SELECT @FatherCode = "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level - 1
+        SET @Prefix = SUBSTRING(@FatherCode,1,(@Level*3)-3)
+
+        SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level
+
+        SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
+        BEGIN TRY
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", Father, "Type", PostableAccount, Balance, UserSign, CreateDate ) 
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, @UserSign, @CreateDate)
+
+            SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message'; 
+            RETURN 
+        END TRY
         BEGIN CATCH
-        SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';  
+            SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message'; 
+            THROW  
         END CATCH
     END
 GO
+
 /*
 IF NOT  EXISTS(SELECT TABLE_NAME
 FROM INFORMATION_SCHEMA.TABLES
