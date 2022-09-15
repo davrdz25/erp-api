@@ -549,7 +549,6 @@ BEGIN
     )
 END
 GO
-
 ALTER PROCEDURE CreateAccount
     @Name NVARCHAR(MAX),
     @Level INT,
@@ -564,7 +563,8 @@ AS
     DECLARE @Sequential INT
     DECLARE @BaseCode NVARCHAR(18)
     DECLARE @Prefix  NVARCHAR(18)
-    
+    DECLARE @LPrefix NVARCHAR(18)
+
     IF EXISTS(SELECT "Name" FROM "Accounts" WHERE "Name" = @Name) BEGIN
         SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message';  
         RETURN 
@@ -591,15 +591,18 @@ AS
     ELSE BEGIN 
         DECLARE @FatherCode NVARCHAR(18)
 
-        IF NOT EXISTS(SELECT "Code" FROM "Accounts" WHERE "Entry" = @Father) BEGIN
+        IF NOT EXISTS(SELECT "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level -1) BEGIN
             SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Father doesn''t exists' AS 'Message'; 
             RETURN
         END
 
         SELECT @FatherCode = "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level - 1
         SET @Prefix = SUBSTRING(@FatherCode,1,(@Level*3)-3)
-
-        SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level
+        set  @LPrefix = SUBSTRING(@FatherCode,1,(@Level*3))
+        print @Prefix
+        print @LPrefix
+        print @fathercode
+        SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level  AND "Father" = @Father
 
         SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
         BEGIN TRY
