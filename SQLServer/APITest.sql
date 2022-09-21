@@ -598,10 +598,8 @@ AS
 
         SELECT @FatherCode = "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level - 1
         SET @Prefix = SUBSTRING(@FatherCode,1,(@Level*3)-3)
-        set  @LPrefix = SUBSTRING(@FatherCode,1,(@Level*3))
-        print @Prefix
-        print @LPrefix
-        print @fathercode
+        SET  @LPrefix = SUBSTRING(@FatherCode,1,(@Level*3))
+
         SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level  AND "Father" = @Father
 
         SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))

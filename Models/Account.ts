@@ -183,10 +183,6 @@ export default class AccountModel {
             throw ({ Message: "Invalid value Level" })
         }
 
-        if ((_Account.Type > 0 && _Account.Type !== -1) && _Account.PostableAccount === "N") {
-            throw ({ Message: "Not title type must be postable" })
-        }
-
         if (_Account.Type === -1 && _Account.PostableAccount === 'Y') {
             throw ({ Message: "Postable account cannot be title type" })
         }
@@ -213,6 +209,7 @@ export default class AccountModel {
                         + _Account.UserSign + ", "
                         + "'" + _Account.CreateDate + "'"
 
+                        console.log(SQLQuery)
                     MSSQLService.RunQuey(SQLQuery).then((_Created:IResult<StoredProcedureOutput>) => {
                         if (_Created.recordset[0].ErrNumber === 500) {
                             reject({ Message: _Created.recordset })
