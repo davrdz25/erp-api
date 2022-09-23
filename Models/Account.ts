@@ -61,6 +61,10 @@ export default class AccountModel {
             Filter.push("Level = " + _Param.Level)
         }
 
+        if (_Param.Type > 0) {
+            Filter.push("Type = " + _Param.Level)
+        }
+
         const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY Entry) AS \"Key\", "
             + "\"Entry\", "
             + "\"Code\", "
