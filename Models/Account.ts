@@ -41,28 +41,24 @@ export default class AccountModel {
     public static Search(_Param: IAccount) {
         let Filter: any[] = []
 
-        if (_Param.Code) {
-            Filter.push("\"Code\" " + (_Param.ExactValues === 'Y' ? "= '" + _Param.Code + "' " : "LIKE '%" + _Param.Code + "%'"))
-        }
-
         if (_Param.Name) {
             Filter.push("\"Name\" " + (_Param.ExactValues === 'Y' ? "= '" + _Param.Name + "' " : "LIKE '%" + _Param.Name + "%'"))
         }
 
-        if (_Param.Entry > 0) {
+        if (Number(_Param.Entry) > 0) {
             Filter.push("\"Entry\" = " + _Param.Entry)
         }
 
-        if (_Param.Father > 0) {
+        if (Number(_Param.Father) > 0) {
             Filter.push("Father = " + _Param.Father)
         }
 
-        if (_Param.Level > 0) {
+        if (Number(_Param.Level) > 0) {
             Filter.push("Level = " + _Param.Level)
         }
 
-        if (_Param.Type > 0) {
-            Filter.push("Type = " + _Param.Level)
+        if (Number(_Param.Type) > 0) {
+            Filter.push("Type = " + _Param.Type)
         }
 
         const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY Entry) AS \"Key\", "
@@ -79,7 +75,8 @@ export default class AccountModel {
             + "UpdateDate "
             + "FROM Accounts "
             + "WHERE " + (Filter.join(_Param.ExactValues === 'Y' ? " AND " : " OR "))
-
+            console.log(SQLQuery);
+            
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
                 console.log(_Accounts)
