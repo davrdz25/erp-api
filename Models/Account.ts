@@ -187,6 +187,7 @@ export default class AccountModel {
         if (_Account.Type === -1 && _Account.PostableAccount === 'Y') {
             throw ({ Message: "Postable account cannot be title type" })
         }
+
         return new Promise((resolve, reject) => {
             Promise.all(([this.NameExists(_Account.Name), this.FatherExists(_Account.Father)])).
                 then(([_NameExists, _FatherExists]) => {
@@ -209,8 +210,7 @@ export default class AccountModel {
                         + (_Account.Balance ? _Account.Balance : 0) + ", "
                         + _Account.UserSign + ", "
                         + "'" + _Account.CreateDate + "'"
-
-                        console.log(SQLQuery)
+                        
                     MSSQLService.RunQuey(SQLQuery).then((_Created:IResult<StoredProcedureOutput>) => {
                         if (_Created.recordset[0].ErrNumber === 500) {
                             reject({ Message: _Created.recordset })
