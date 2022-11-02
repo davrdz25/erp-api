@@ -24,7 +24,7 @@ export default class BankAccountRoute {
     public Add(@Body({ required: true }) NewBank: BankAccountModel, @Res() response: any) {
         return NewBank.Create().then((_Created) => {
             if (_Created) {
-                return response.status(200).send({ Message: "Bank Created" })
+                return response.status(200).send({ Message: "Bank Account Created" })
             } else {
                 return response.status(400).send({ Message: "Bank can't be created" })
             }
