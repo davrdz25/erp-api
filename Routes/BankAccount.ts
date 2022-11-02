@@ -26,7 +26,7 @@ export default class BankAccountRoute {
             if (_Created) {
                 return response.status(200).send({ Message: "Bank Account Created" })
             } else {
-                return response.status(400).send({ Message: "Bank can't be created" })
+                return response.status(400).send({ Message: "Bank account can't be created" })
             }
         }).catch((_Err) => {
             return response.status(500).send(_Err)
