@@ -141,19 +141,19 @@ export default class BankAccountModel {
         }
 
 
-        if (this.Account <= 0) {
+        if (_BankAcct.Account <= 0) {
             throw ({ Message: "Invalid  account" })
         }
 
-        if (this.Bank <= 0) {
+        if (_BankAcct.Bank <= 0) {
             throw ({ Message: "Invalid  bank" })
         }
 
-        if (this.Credit && (this.CutOffDay < 1 || this.CutOffDay > 31)) {
+        if (_BankAcct.Credit === 'Y' && (_BankAcct.CutOffDay < 1 || _BankAcct.CutOffDay > 31)) {
             throw ({ Message: "Invalid cut off day" })
         }
 
-        if (this.Credit && (this.PayDayLimit < 1 || this.PayDayLimit > 31)) {
+        if (_BankAcct.Credit === 'Y' && (_BankAcct.PayDayLimit < 1 || _BankAcct.PayDayLimit > 31)) {
             throw ({ Message: "Invalid Pay day limit" })
         }
 
@@ -164,19 +164,19 @@ export default class BankAccountModel {
                 + "\"Code\", "
                 + "\"Name\", "
                 + "Bank, "
-                + (this.SWIFTBIC ? "SWIFTBIC, " : "")
+                + (_BankAcct.SWIFTBIC ? "SWIFTBIC, " : "")
                 + "Account, "
                 + "Credit ,"
-                + (this.DebitBalance !== -1 ? "DebitBalance, " : "")
-                + (this.Credit ? "CreditDebt, " : "")
-                + (this.Credit ? "AviableCredit, " : "")
-                + (this.Credit ? "CutOffDate, " : "")
-                + (this.Credit ? "PayDayLimit, " : "")
+                + (_BankAcct.DebitBalance !== -1 ? "DebitBalance, " : "")
+                + (_BankAcct.Credit ? "CreditDebt, " : "")
+                + (_BankAcct.Credit ? "AviableCredit, " : "")
+                + (_BankAcct.Credit ? "CutOffDate, " : "")
+                + (_BankAcct.Credit ? "PayDayLimit, " : "")
                 + "UserSign, "
                 + "CreateDate"
                 + ") VALUES ("
                 + "(SELECT ISNULL(MAX(\"Entry\"), 0) + 1 \"Entry\" FROM BankAccounts),"
-                + "'" + this.Code + "', "
+                + "'" + _BankAcct.Code + "', "
                 + "'" + this.Name + "', "
                 + this.Bank + ", "
                 + this.Account + ", "
