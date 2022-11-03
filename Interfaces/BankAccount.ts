@@ -1,7 +1,8 @@
 import Base from "./Base";
 
-export default interface BankAccount extends Base {
-    Bank: number,
+export default interface IBankAccount extends Base {
+    BankEntry: number,
+    BankCode: string,
     SWIFTBIC: string,
     Account: number,
     Credit: boolean,

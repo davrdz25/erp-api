@@ -1,26 +1,7 @@
 import MSSQLService from "../Services/Database";
-import BankAccount from "../Interfaces/BankAccount"
+import IBankAccount from "../Interfaces/BankAccount"
 
-export default class BankAccountModel implements BankAccount {
-    public Entry: number = -1
-    public Code: string = ""
-    public Name: string = ""
-    public Bank: number = -1
-    public SWIFTBIC: string = ""
-    public Account: number = -1
-    public Credit: boolean = false
-    public DebitBalance: number = -1
-    public CreditDebt: number = -1
-    public AviableCredit: number = -1
-    public CutOffDay: number = 0
-    public PayDayLimit: number = 0
-    public UserSign: number = -1
-    public CreateDate: Date = new Date()
-    public UpdateDate: Date = new Date()
-
-    public CreateNew: boolean = false
-    public ExactValues: string = 'Y'
-
+export default class BankAccountModel {
     public GetAll() {
         const SQLQuery = "SELECT "
             + "\"Entry\", "
@@ -49,19 +30,23 @@ export default class BankAccountModel implements BankAccount {
         })
     }
 
-    public Search() {
+    public Search(_Bank: IBankAccount) {
         let Filter: string[] = []
 
-        if (this.Code) {
+        if (_Bank.Code) {
             Filter.push("\"Code\"" + (this.ExactValues === 'Y' ? " = '" + this.Code + "' " : "LIKE '%" + this.Code + "%'"))
         }
 
-        if (this.Name) {
+        if (_IBank.Name) {
             Filter.push("\"Name\"" + (this.ExactValues === 'Y' ? " = '" + this.Name + "' " : "LIKE '%" + this.Code + "%'"))
         }
 
-        if (this.SWIFTBIC) {
+        if (_Bank.SWIFTBIC) {
             Filter.push("SWIFTBIC" + (this.ExactValues === 'Y' ? " = '" + this.SWIFTBIC + "' " : "LIKE '%" + this.Code + "%'"))
+        }
+        
+        if (_Bank.Account) {
+            Filter.push("Account" + (this.ExactValues === 'Y' ? " = '" + _IBank.Account + "' " : "LIKE '%" + this.Code + "%'"))
         }
 
         const SQLQuery = "SELECT "
@@ -92,10 +77,10 @@ export default class BankAccountModel implements BankAccount {
         })
     }
 
-    public ExistsCode() {
+    public ExistsCode(_Code: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
-            + "WHERE \"Code\" = '" + this.Code + "'"
+            + "WHERE \"Code\" = '" + _Code + "'"
 
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Count) => {
@@ -110,10 +95,10 @@ export default class BankAccountModel implements BankAccount {
         })
     }
 
-    public ExistsName() {
+    public ExistsName(_Name: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
-            + "WHERE \"Name\" = '" + this.Name + "'"
+            + "WHERE \"Name\" = '" + _Name + "'"
 
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Count) => {
@@ -128,10 +113,10 @@ export default class BankAccountModel implements BankAccount {
         })
     }
 
-    public ExistsSWIFTBIC() {
+    public ExistsSWIFTBIC(_SWIFTBIC: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
-            + "WHERE SWIFTBIC = '" + this.SWIFTBIC + "'"
+            + "WHERE SWIFTBIC = '" + _SWIFTBIC + "'"
 
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Count) => {
@@ -146,18 +131,15 @@ export default class BankAccountModel implements BankAccount {
         })
     }
 
-    public Create() {
-        if (!this.Name) {
+    public Create(_BankAcct: IBankAccount) {
+        if (!_BankAcct.Name) {
             throw ({ Message: "Name can't be empty" })
         }
 
-        if (!this.Code) {
+        if (!_BankAcct.Code) {
             throw ({ Message: "Code can't be empty" })
         }
 
-        if (!this.Code) {
-            throw ({ Message: "Code can't be empty" })
-        }
 
         if (this.Account <= 0) {
             throw ({ Message: "Invalid  account" })

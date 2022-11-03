@@ -37,9 +37,9 @@ export default class BankAccountRoute {
     public Modify(@Body({ required: true }) Bank: BankAccountModel,@Res() response: any) {
         return Bank.Update().then((_Updated) => {
             if (_Updated) {
-                return response.status(200).send({ Message: "Bank updated" })
+                return response.status(200).send({ Message: "Bank account updated" })
             } else {
-                return response.status(400).send({ Message: "Bank can't be updated" })
+                return response.status(400).send({ Message: "Bank account can't be updated" })
             }
         }).catch((_Err) => {
             return response.status(500).send(_Err)
