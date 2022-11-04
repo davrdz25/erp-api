@@ -145,7 +145,7 @@ export default class BankAccountModel {
             throw ({ Message: "Invalid  account" })
         }
 
-        if (_BankAcct.Bank <= 0) {
+        if (_BankAcct.BankEntry <= 0) {
             throw ({ Message: "Invalid  bank" })
         }
 
@@ -177,18 +177,18 @@ export default class BankAccountModel {
                 + ") VALUES ("
                 + "(SELECT ISNULL(MAX(\"Entry\"), 0) + 1 \"Entry\" FROM BankAccounts),"
                 + "'" + _BankAcct.Code + "', "
-                + "'" + this.Name + "', "
-                + this.Bank + ", "
-                + this.Account + ", "
-                + (this.SWIFTBIC ? "'" + this.SWIFTBIC + "', " : "")
-                + (this.Credit ? "1, " : "0, ")
-                + (this.DebitBalance !== -1 ? this.DebitBalance + ", " : "")
-                + (this.Credit ? this.CreditDebt + ", " : "")
-                + (this.Credit ? this.AviableCredit + ", " : "")
-                + (this.Credit ? this.CutOffDay + ", " : "")
-                + (this.Credit ? this.PayDayLimit + ", " : "")
-                + this.UserSign + ", "
-                + "'" + this.CreateDate + "')"
+                + "'" + _BankAcct.Name + "', "
+                + _BankAcct.BankEntry + ", "
+                + _BankAcct.Account + ", "
+                + (_BankAcct.SWIFTBIC ? "'" + _BankAcct.SWIFTBIC + "', " : "")
+                + (_BankAcct.Credit ? "1, " : "0, ")
+                + (_BankAcct.DebitBalance !== -1 ? _BankAcct.DebitBalance + ", " : "")
+                + (_BankAcct.Credit ? _BankAcct.CreditDebt + ", " : "")
+                + (_BankAcct.Credit ? _BankAcct.AviableCredit + ", " : "")
+                + (_BankAcct.Credit ? _BankAcct.CutOffDay + ", " : "")
+                + (_BankAcct.Credit ? _BankAcct.PayDayLimit + ", " : "")
+                + _BankAcct.UserSign + ", "
+                + "'" + _BankAcct.CreateDate + "')"
 
             Promise.all([this.ExistsCode(), this.ExistsName(), this.SWIFTBIC ? this.ExistsSWIFTBIC() : ""]).then(([_ExistsCode, _ExistsName, _ExistsSWIFTBIC]) => {
                 if (_ExistsCode) {
