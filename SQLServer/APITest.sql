@@ -484,72 +484,7 @@ BEGIN
     )
 END
 GO
-IF NOT  EXISTS(SELECT TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'PaymentCategories' )
-BEGIN
-    CREATE TABLE PaymentCategories
-    (
-        "Entry" INT,
-        "Code" NVARCHAR(20) NOT NULL,
-        "Name" NVARCHAR(100) NOT NULL,
-        Account INT NOT NULL,
-        UserSign INT NOT NULL CONSTRAINT DF_PaymentCategories_UserSign DEFAULT  -1,
-        CreateDate DATETIME NOT NULL,
-        UpdateDate DATETIME,
-        CONSTRAINT PK_PaymentCategories_Entry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_PaymentCategories_Code UNIQUE ("Code"),
-        CONSTRAINT UQ_PaymentCategories_Name UNIQUE ("Name"),
-        CONSTRAINT UQ_PaymentCategories_CodeName UNIQUE ("Code","Name")
-    )
-END
-GO
-IF NOT  EXISTS(SELECT TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Transfers' )
-BEGIN
-    CREATE TABLE Transfers
-    (
-        "Entry" INT,
-        Prefix NVARCHAR(20) NOT NULL,
-        "Number" NVARCHAR(100) NOT NULL,
-        TransDate DATE,
-        TransTime TIME,
-        OrigAcct INT NOT NULL,
-        DestAcct INT NOT NULL,
-        Ammount DECIMAL(19,6),
-        UserSign INT NOT NULL CONSTRAINT DF_Transfers_UserSign DEFAULT  -1,
-        CreateDate DATETIME NOT NULL,
-        UpdateDate DATETIME,
-        CONSTRAINT PK_Transfers_Entry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_Transfers_PrefixNumber UNIQUE (Prefix, "Number")
-    )
-END
-GO
-IF NOT  EXISTS(SELECT TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Payments' )
-BEGIN
-    CREATE TABLE Payments
-    (
-        "Entry" INT,
-        Prefix NVARCHAR(20) NOT NULL,
-        "Number" NVARCHAR(100) NOT NULL,
-        PayDate DATE,
-        PayTime TIME,
-        "Type" INT NOT NULL,
-        Category INT NOT NULL,
-        Account INT NOT NULL,
-        Ammount DECIMAL(19,6),
-        UserSign INT NOT NULL CONSTRAINT DF_Payments_UserSign DEFAULT  -1,
-        CreateDate DATETIME NOT NULL,
-        UpdateDate DATETIME,
-        CONSTRAINT PK_Payments_Entry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_Payments_PrefixNumber UNIQUE (Prefix, "Number")
-    )
-END
-GO
-ALTER PROCEDURE CreateAccount
+CREATE PROCEDURE CreateAccount
     @Name NVARCHAR(MAX),
     @Level INT,
     @Father INT,
