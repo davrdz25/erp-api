@@ -551,28 +551,3 @@ AS
         END CATCH
     END
 GO
-
-/*
-IF NOT  EXISTS(SELECT TABLE_NAME
-FROM INFORMATION_SCHEMA.TABLES
-WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = '' )
-BEGIN
-    CREATE TABLE 
-    (
-        "Entry" INT,
-        "Code" NVARCHAR(20) NOT NULL,
-        "Name" NVARCHAR(100) NOT NULL,
-        UserSign INT NOT NULL CONSTRAINT DF__UserSign DEFAULT  -1,
-        CreateDate DATETIME NOT NULL,
-        UpdateDate DATETIME NOT NULL,
-        CONSTRAINT PK__Entry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ__Code UNIQUE ("Code"),
-        CONSTRAINT UQ__Name UNIQUE ("Name"),
-        CONSTRAINT UQ__CodeName UNIQUE ("Code","Name")
-    )
-END
-GO
-/*
-
-
---EXECUTE CreateAccount 'Test Accosdsdsuntddd', 1, -1, -1, 'N',0,-1,'20220907'
