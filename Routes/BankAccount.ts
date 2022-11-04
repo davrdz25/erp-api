@@ -1,4 +1,4 @@
-import { Body, Delete, Get, JsonController, Param, Post, Put, QueryParams, Res } from "routing-controllers";
+import { Body, Get, JsonController, Param, Post, Put, QueryParams, Res } from "routing-controllers";
 import IBankAccount from "../Interfaces/BankAccount";
 import BankAccountModel from "../Models/BankAccount";
 
@@ -6,15 +6,14 @@ import BankAccountModel from "../Models/BankAccount";
 export default class BankAccountRoute {
     @Get()
     public Search(@QueryParams({ required: false }) BankAccount: IBankAccount, @Res() response: any) {
-        const BankModel = new BankAccountModel
         if (BankAccount.Code || BankAccount.Name) {
-            return BankAccount.Search(BankAccount).then((_Banks) => {
+            return BankAccountModel.Search(BankAccount).then((_Banks) => {
                 return response.status(200).send(_Banks)
             }).catch((_Err: any) => {
                 return  response.status(500).send(_Err)
             })
         } else {
-            return BankAccount.GetAll().then((_Banks) => {
+            return BankAccountModel.GetAll().then((_Banks) => {
                 return response.status(200).send(_Banks)
             }).catch((_Err) => {
                 return response.status(500).send(_Err)
@@ -23,8 +22,8 @@ export default class BankAccountRoute {
     }
 
     @Post()
-    public Add(@Body({ required: true }) NewBank: BankAccountModel, @Res() response: any) {
-        return NewBank.Create().then((_Created) => {
+    public Add(@Body({ required: true }) _NewBank: IBankAccount, @Res() response: any) {
+        return BankAccountModel.Create(_NewBank).then((_Created) => {
             if (_Created) {
                 return response.status(200).send({ Message: "Bank Account Created" })
             } else {
@@ -36,8 +35,8 @@ export default class BankAccountRoute {
     }
 
     @Put()
-    public Modify(@Body({ required: true }) Bank: BankAccountModel,@Res() response: any) {
-        return Bank.Update().then((_Updated) => {
+    public Modify(@Body({ required: true }) _Bank: IBankAccount,@Res() response: any) {
+        return BankAccountModel.Update(_Bank).then((_Updated) => {
             if (_Updated) {
                 return response.status(200).send({ Message: "Bank account updated" })
             } else {

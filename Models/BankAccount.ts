@@ -2,7 +2,7 @@ import MSSQLService from "../Services/Database";
 import IBankAccount from "../Interfaces/BankAccount"
 
 export default class BankAccountModel {
-    public GetAll() {
+    public static GetAll() {
         const SQLQuery = "SELECT "
             + "\"Entry\", "
             + "\"Code\", "
@@ -30,7 +30,7 @@ export default class BankAccountModel {
         })
     }
 
-    public Search(_BankAcct: IBankAccount) {
+    public static Search(_BankAcct: IBankAccount) {
         let Filter: string[] = []
 
         if (_BankAcct.Code) {
@@ -77,7 +77,7 @@ export default class BankAccountModel {
         })
     }
 
-    public ExistsCode(_Code: string | undefined) {
+    public static ExistsCode(_Code: string | undefined) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
             + "WHERE \"Code\" = '" + _Code + "'"
@@ -95,7 +95,7 @@ export default class BankAccountModel {
         })
     }
 
-    public ExistsName(_Name: string) {
+    public static ExistsName(_Name: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
             + "WHERE \"Name\" = '" + _Name + "'"
@@ -113,7 +113,7 @@ export default class BankAccountModel {
         })
     }
 
-    public ExistsSWIFTBIC(_SWIFTBIC: string) {
+    public static ExistsSWIFTBIC(_SWIFTBIC: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
             + "WHERE SWIFTBIC = '" + _SWIFTBIC + "'"
@@ -131,7 +131,7 @@ export default class BankAccountModel {
         })
     }
 
-    public Create(_BankAcct: IBankAccount) {
+    public static Create(_BankAcct: IBankAccount) {
         if (!_BankAcct.Name) {
             throw ({ Message: "Name can't be empty" })
         }
@@ -219,7 +219,7 @@ export default class BankAccountModel {
         })
     }
 
-    public Update(_BankAcct: IBankAccount) {
+    public static Update(_BankAcct: IBankAccount) {
         return new Promise((resolve, reject) => {
             const SQLQuery = "Update BankAccounts SET"
                 + (_BankAcct.Name ? "\"Name\" = '" + "'" + _BankAcct.Name + "', " : "")
