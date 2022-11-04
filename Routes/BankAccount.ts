@@ -5,7 +5,7 @@ import BankAccountModel from "../Models/BankAccount";
 @JsonController('BankAccounts')
 export default class BankAccountRoute {
     @Get()
-    public Search(@QueryParams({ required: false }) BankAccount: IBankAccount, @Res() response: any) {
+    public static Search(@QueryParams({ required: false }) BankAccount: IBankAccount, @Res() response: any) {
         if (BankAccount.Code || BankAccount.Name) {
             return BankAccountModel.Search(BankAccount).then((_Banks) => {
                 return response.status(200).send(_Banks)
@@ -22,7 +22,7 @@ export default class BankAccountRoute {
     }
 
     @Post()
-    public Add(@Body({ required: true }) _NewBank: IBankAccount, @Res() response: any) {
+    public static Add(@Body({ required: true }) _NewBank: IBankAccount, @Res() response: any) {
         return BankAccountModel.Create(_NewBank).then((_Created) => {
             if (_Created) {
                 return response.status(200).send({ Message: "Bank Account Created" })
@@ -35,7 +35,7 @@ export default class BankAccountRoute {
     }
 
     @Put()
-    public Modify(@Body({ required: true }) _Bank: IBankAccount,@Res() response: any) {
+    public static Modify(@Body({ required: true }) _Bank: IBankAccount,@Res() response: any) {
         return BankAccountModel.Update(_Bank).then((_Updated) => {
             if (_Updated) {
                 return response.status(200).send({ Message: "Bank account updated" })
