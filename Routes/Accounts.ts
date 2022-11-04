@@ -14,8 +14,6 @@ export default class AccountRoute {
 
     @Get()
     public Search(@QueryParams({ required: false }) Account: IAccount, @Res() response: any){
-        console.log(Account);
-        
         if ((Account.Entry !== 0 && Account.Entry >= 1 ) || Account.Name || Number(Account.Level) > 0 || (Number(Account.Type) > -1 && Number(Account.Type) !== 0)) {
             return AccountModel.Search(Account).then((_Account) => {
                 return response.status(200).send(_Account)

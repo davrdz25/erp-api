@@ -1,14 +1,16 @@
 import { Body, Delete, Get, JsonController, Param, Post, Put, QueryParams, Res } from "routing-controllers";
+import IBankAccount from "../Interfaces/BankAccount";
 import BankAccountModel from "../Models/BankAccount";
 
 @JsonController('BankAccounts')
 export default class BankAccountRoute {
     @Get()
-    public Search(@QueryParams({ required: false }) BankAccount: BankAccountModel, @Res() response: any) {
+    public Search(@QueryParams({ required: false }) BankAccount: IBankAccount, @Res() response: any) {
+        const BankModel = new BankAccountModel
         if (BankAccount.Code || BankAccount.Name) {
-            return BankAccount.Search().then((_Banks) => {
+            return BankAccount.Search(BankAccount).then((_Banks) => {
                 return response.status(200).send(_Banks)
-            }).catch((_Err) => {
+            }).catch((_Err: any) => {
                 return  response.status(500).send(_Err)
             })
         } else {
