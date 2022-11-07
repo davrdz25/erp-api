@@ -2,7 +2,7 @@ import MSSQLService from "../Services/Database";
 import IBankAccount from "../Interfaces/BankAccount"
 
 export default class BankAccountModel {
-    public static GetAll() {
+    public GetAll() {
         const SQLQuery = "SELECT "
             + "\"Entry\", "
             + "\"Code\", "
@@ -30,23 +30,23 @@ export default class BankAccountModel {
         })
     }
 
-    public static Search(_BankAcct: IBankAccount) {
+    public Search(_Bank: IBankAccount) {
         let Filter: string[] = []
 
-        if (_BankAcct.Code) {
-            Filter.push("\"Code\"" + (_BankAcct.ExactValues === 'Y' ? " = '" + _BankAcct.Code + "' " : "LIKE '%" + _BankAcct.Code + "%'"))
+        if (_Bank.Code) {
+            Filter.push("\"Code\"" + (this.ExactValues === 'Y' ? " = '" + this.Code + "' " : "LIKE '%" + this.Code + "%'"))
         }
 
-        if (_BankAcct.Name) {
-            Filter.push("\"Name\"" + (_BankAcct.ExactValues === 'Y' ? " = '" + _BankAcct.Name + "' " : "LIKE '%" + _BankAcct.Code + "%'"))
+        if (_IBank.Name) {
+            Filter.push("\"Name\"" + (this.ExactValues === 'Y' ? " = '" + this.Name + "' " : "LIKE '%" + this.Code + "%'"))
         }
 
-        if (_BankAcct.SWIFTBIC) {
-            Filter.push("SWIFTBIC" + (_BankAcct.ExactValues === 'Y' ? " = '" + _BankAcct.SWIFTBIC + "' " : "LIKE '%" + _BankAcct.Code + "%'"))
+        if (_Bank.SWIFTBIC) {
+            Filter.push("SWIFTBIC" + (this.ExactValues === 'Y' ? " = '" + this.SWIFTBIC + "' " : "LIKE '%" + this.Code + "%'"))
         }
         
-        if (_BankAcct.Account) {
-            Filter.push("Account" + (_BankAcct.ExactValues === 'Y' ? " = '" + _BankAcct.Account + "' " : "LIKE '%" + _BankAcct.Code + "%'"))
+        if (_Bank.Account) {
+            Filter.push("Account" + (this.ExactValues === 'Y' ? " = '" + _IBank.Account + "' " : "LIKE '%" + this.Code + "%'"))
         }
 
         const SQLQuery = "SELECT "
@@ -66,7 +66,7 @@ export default class BankAccountModel {
             + "CreateDate, "
             + "UpdateDate "
             + "FROM BankAccounts "
-            + "WHERE " + (Filter.join(_BankAcct.ExactValues === 'Y' ? " AND " : " OR "))
+            + "WHERE " + (Filter.join(this.ExactValues === 'Y' ? " AND " : " OR "))
 
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_BankAccounts) => {
@@ -77,7 +77,7 @@ export default class BankAccountModel {
         })
     }
 
-    public static ExistsCode(_Code: string | undefined) {
+    public ExistsCode(_Code: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
             + "WHERE \"Code\" = '" + _Code + "'"
@@ -95,7 +95,7 @@ export default class BankAccountModel {
         })
     }
 
-    public static ExistsName(_Name: string) {
+    public ExistsName(_Name: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
             + "WHERE \"Name\" = '" + _Name + "'"
@@ -113,7 +113,7 @@ export default class BankAccountModel {
         })
     }
 
-    public static ExistsSWIFTBIC(_SWIFTBIC: string) {
+    public ExistsSWIFTBIC(_SWIFTBIC: string) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
             + "WHERE SWIFTBIC = '" + _SWIFTBIC + "'"
@@ -131,7 +131,7 @@ export default class BankAccountModel {
         })
     }
 
-    public static Create(_BankAcct: IBankAccount) {
+    public Create(_BankAcct: IBankAccount) {
         if (!_BankAcct.Name) {
             throw ({ Message: "Name can't be empty" })
         }
@@ -145,7 +145,7 @@ export default class BankAccountModel {
             throw ({ Message: "Invalid  account" })
         }
 
-        if (_BankAcct.BankEntry <= 0) {
+        if (_BankAcct.Bank <= 0) {
             throw ({ Message: "Invalid  bank" })
         }
 
@@ -156,6 +156,7 @@ export default class BankAccountModel {
         if (_BankAcct.Credit === 'Y' && (_BankAcct.PayDayLimit < 1 || _BankAcct.PayDayLimit > 31)) {
             throw ({ Message: "Invalid Pay day limit" })
         }
+
 
         return new Promise((resolve, reject) => {
             const SQLQuery = "INSERT INTO BankAccounts ("
@@ -176,20 +177,20 @@ export default class BankAccountModel {
                 + ") VALUES ("
                 + "(SELECT ISNULL(MAX(\"Entry\"), 0) + 1 \"Entry\" FROM BankAccounts),"
                 + "'" + _BankAcct.Code + "', "
-                + "'" + _BankAcct.Name + "', "
-                + _BankAcct.BankEntry + ", "
-                + _BankAcct.Account + ", "
-                + (_BankAcct.SWIFTBIC ? "'" + _BankAcct.SWIFTBIC + "', " : "")
-                + (_BankAcct.Credit ? "1, " : "0, ")
-                + (_BankAcct.DebitBalance !== -1 ? _BankAcct.DebitBalance + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.CreditDebt + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.AviableCredit + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.CutOffDay + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.PayDayLimit + ", " : "")
-                + _BankAcct.UserSign + ", "
-                + "'" + _BankAcct.CreateDate + "')"
+                + "'" + this.Name + "', "
+                + this.Bank + ", "
+                + this.Account + ", "
+                + (this.SWIFTBIC ? "'" + this.SWIFTBIC + "', " : "")
+                + (this.Credit ? "1, " : "0, ")
+                + (this.DebitBalance !== -1 ? this.DebitBalance + ", " : "")
+                + (this.Credit ? this.CreditDebt + ", " : "")
+                + (this.Credit ? this.AviableCredit + ", " : "")
+                + (this.Credit ? this.CutOffDay + ", " : "")
+                + (this.Credit ? this.PayDayLimit + ", " : "")
+                + this.UserSign + ", "
+                + "'" + this.CreateDate + "')"
 
-            Promise.all([this.ExistsCode(_BankAcct.Code), this.ExistsName(_BankAcct.Name), _BankAcct.SWIFTBIC ? this.ExistsSWIFTBIC(_BankAcct.SWIFTBIC) : ""]).then(([_ExistsCode, _ExistsName, _ExistsSWIFTBIC]) => {
+            Promise.all([this.ExistsCode(), this.ExistsName(), this.SWIFTBIC ? this.ExistsSWIFTBIC() : ""]).then(([_ExistsCode, _ExistsName, _ExistsSWIFTBIC]) => {
                 if (_ExistsCode) {
                     reject({ Message: "Code already exists" })
                 }
@@ -198,7 +199,7 @@ export default class BankAccountModel {
                     reject({ Message: "Name already exists" })
                 }
 
-                if (_BankAcct.SWIFTBIC) {
+                if (this.SWIFTBIC) {
                     if (_ExistsSWIFTBIC) {
                         reject({ Message: "SWIFTBIC already exists" })
                     }
@@ -219,22 +220,22 @@ export default class BankAccountModel {
         })
     }
 
-    public static Update(_BankAcct: IBankAccount) {
+    public Update() {
         return new Promise((resolve, reject) => {
             const SQLQuery = "Update BankAccounts SET"
-                + (_BankAcct.Name ? "\"Name\" = '" + "'" + _BankAcct.Name + "', " : "")
-                + (_BankAcct.BankEntry !== 0 ? "Bank = " + _BankAcct.BankEntry + ", " : "")
-                + (_BankAcct.SWIFTBIC ? "SWIFTBIC = '" + "'" + _BankAcct.SWIFTBIC + "', " : "")
-                + "Credit = " + (_BankAcct.Credit ? "1, " : "0, ")
-                + (_BankAcct.DebitBalance !== -1 ? "DebitBalance = " + _BankAcct.DebitBalance + ", " : "")
-                + ((_BankAcct.Credit && _BankAcct.CreditDebt !== -1) ? "CreditDebt = " + _BankAcct.CreditDebt + ", " : "")
-                + ((_BankAcct.Credit && _BankAcct.AviableCredit !== -1) ? "AviableCredit, " + _BankAcct.AviableCredit + ", " : "")
-                + ((_BankAcct.Credit && _BankAcct.CutOffDay !== -1) ? "CutOffDate, " + _BankAcct.CutOffDay + ", " : "")
-                + ((_BankAcct.Credit && _BankAcct.PayDayLimit !== -1) ? "PayDayLimit, " + _BankAcct.PayDayLimit + ", " : "")
-                + "UpdateDate = '" + _BankAcct.UpdateDate + "' "
-                + "WHERE \"Code\" = '" + _BankAcct.Code + "'"
+                + (this.Name ? "\"Name\" = '" + "'" + this.Name + "', " : "")
+                + (this.Bank !== 0 ? "Bank = " + this.Bank + ", " : "")
+                + (this.SWIFTBIC ? "SWIFTBIC = '" + "'" + this.SWIFTBIC + "', " : "")
+                + "Credit = " + (this.Credit ? "1, " : "0, ")
+                + (this.DebitBalance !== -1 ? "DebitBalance = " + this.DebitBalance + ", " : "")
+                + ((this.Credit && this.CreditDebt !== -1) ? "CreditDebt = " + this.CreditDebt + ", " : "")
+                + ((this.Credit && this.AviableCredit !== -1) ? "AviableCredit, " + this.AviableCredit + ", " : "")
+                + ((this.Credit && this.CutOffDay !== -1) ? "CutOffDate, " + this.CutOffDay + ", " : "")
+                + ((this.Credit && this.PayDayLimit !== -1) ? "PayDayLimit, " + this.PayDayLimit + ", " : "")
+                + "UpdateDate = '" + this.UpdateDate + "' "
+                + "WHERE \"Code\" = '" + this.Code + "'"
 
-            Promise.all([this.ExistsCode(_BankAcct.Code), this.ExistsName(_BankAcct.Name), _BankAcct.SWIFTBIC ? this.ExistsSWIFTBIC(_BankAcct.SWIFTBIC) : ""]).then(([_ExistsCode, _ExistsName, _ExistsSWIFTBIC]) => {
+            Promise.all([this.ExistsCode(), this.ExistsName(), this.SWIFTBIC ? this.ExistsSWIFTBIC() : ""]).then(([_ExistsCode, _ExistsName, _ExistsSWIFTBIC]) => {
                 if (!_ExistsCode) {
                     reject({ Message: "Code doesn't exists" })
                 }
@@ -243,7 +244,7 @@ export default class BankAccountModel {
                     reject({ Message: "Name already exists" })
                 }
 
-                if (_BankAcct.SWIFTBIC) {
+                if (this.SWIFTBIC) {
                     if (_ExistsSWIFTBIC) {
                         reject({ Message: "SWIFTBIC already exists" })
                     }
