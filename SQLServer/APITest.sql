@@ -560,18 +560,49 @@ CREATE PROCEDURE CreateBankAccount
     @DebitBalance INT = 0,
     @CreditDebt INT = 0,
     @AviableCredit INT = 0,
-    @CutOffDate INT = 0,
+    @CutOffDay INT = 0,
     @PayDayLimit INT = 0,
     @UserSign INT = -1,
     @CreateDate DATETIME
 AS
     BEGIN TRY
+
+        IF(@Name.LEN() = 0 OR @Name = '')
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid name, cannot be empty' AS 'Message'; 
+            RETURN
+        END
+
+        IF(@AccountEntry = 0 OR @Account < -1)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid already exists' AS 'Message'; 
+            RETURN
+        END
+
+        IF(@Credit = 'Y' AND @DebitBalance > 0)
+        BEGIN
+        SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No debit balance if account is credit' AS 'Message'; 
+            RETURN
+        END
+
+        IF(@Credit = 'Y' AND (@PayDayLimit < 1 AND @PayDayLimit > 31))
+        BEGIN
+        SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid Pay day limit if account is credit' AS 'Message'; 
+            RETURN
+        END
+
+        IF(@Credit = 'Y' AND (@CutOffDay < 1 AND @CutOffDay > 31))
+        BEGIN
+        SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid cut off day if account is credit' AS 'Message'; 
+            RETURN
+        END
+
         IF EXISTS(SELECT "Name" FROM "BankAccounts" WHERE "Name" = @Name)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message'; 
             RETURN
         END
-
+        
         IF NOT EXISTS(SELECT "Entry" FROM "Banks" WHERE "Entry" = @BankEntry)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Bank doesn''t exists' AS 'Message'; 
@@ -581,6 +612,12 @@ AS
         IF NOT EXISTS(SELECT "SWIFTBIC" FROM "Banks" WHERE "SWIFTBIC" = @SWIFTBIC)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','SWIFTBIC already exists' AS 'Message'; 
+            RETURN
+        END
+
+        IF NOT EXISTS(SELECT "Account" FROM "BankAccounts" WHERE "Account" = @AccountEntry)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Account doesn''t exists' AS 'Message'; 
             RETURN
         END
 

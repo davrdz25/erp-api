@@ -6,7 +6,7 @@ interface StoredProcedureOutput {
     ErrNumber: number,
     ProcName: string,
     State: string,
-    Message: string; 
+    Message: string;
 }
 export default class AccountModel {
 
@@ -75,8 +75,8 @@ export default class AccountModel {
             + "UpdateDate "
             + "FROM Accounts "
             + "WHERE " + (Filter.join(_Param.ExactValues === 'Y' ? " AND " : " OR "))
-            console.log(SQLQuery);
-            
+        console.log(SQLQuery);
+
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
                 console.log(_Accounts)
@@ -189,40 +189,24 @@ export default class AccountModel {
         }
 
         return new Promise((resolve, reject) => {
-            Promise.all(([this.NameExists(_Account.Name), this.FatherExists(_Account.Father)])).
-                then(([_NameExists, _FatherExists]) => {
-                    if (_NameExists) {
-                        throw ({ Message: "Name already exists" })
-                    }
+            const SQLQuery = "EXECUTE CreateAccount" +
+                "'" + _Account.Name + "', "
+                + _Account.Level + ", "
+                + _Account.Father + ", "
+                + _Account.Type + ", "
+                + "'" + _Account.PostableAccount + "', "
+                + (_Account.Balance ? _Account.Balance : 0) + ", "
+                + _Account.UserSign + ", "
+                + "'" + _Account.CreateDate + "'"
 
-                    if (_Account.Father !== -1 && _Account.Level !== 1) {
-                        if (!_FatherExists) {
-                            throw ({ Message: "Father doesn't exists" })
-                        }
-                    }
-                
-                    const SQLQuery = "EXECUTE CreateAccount" +
-                        "'" + _Account.Name + "', "
-                        + _Account.Level + ", "
-                        + _Account.Father + ", "
-                        + _Account.Type + ", "
-                        + "'" + _Account.PostableAccount + "', "
-                        + (_Account.Balance ? _Account.Balance : 0) + ", "
-                        + _Account.UserSign + ", "
-                        + "'" + _Account.CreateDate + "'"
-                        
-                    MSSQLService.RunQuey(SQLQuery).then((_Created:IResult<StoredProcedureOutput>) => {
-                        if (_Created.recordset[0].ErrNumber === 500) {
-                            reject({ Message: _Created.recordset })
-                        }
-                        resolve(_Created.recordset)
-                    }).catch((_Err) => {
-                        reject(_Err)
-                    })
-
-                }).catch((_Err) => {
-                    reject(_Err)
-                })
+            MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
+                if (_Created.recordset[0].ErrNumber === 500) {
+                    reject({ Message: _Created.recordset })
+                }
+                resolve(_Created.recordset)
+            }).catch((_Err) => {
+                reject(_Err)
+            })
         })
     }
 
