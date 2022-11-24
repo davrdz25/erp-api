@@ -551,3 +551,47 @@ AS
         END CATCH
     END
 GO
+CREATE PROCEDURE CreateBankAccount
+    @Name NVARCHAR(MAX),
+    @BankEntry INT,
+    @SWIFTBIC INT,
+    @AccountEntry INT,
+    @Credit CHAR,
+    @DebitBalance INT = 0,
+    @CreditDebt INT = 0,
+    @AviableCredit INT = 0,
+    @CutOffDate INT = 0,
+    @PayDayLimit INT = 0,
+    @UserSign INT = -1,
+    @CreateDate DATETIME
+AS
+    BEGIN TRY
+        IF EXISTS(SELECT "Name" FROM "BankAccounts" WHERE "Name" = @Name)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message'; 
+            RETURN
+        END
+
+        IF NOT EXISTS(SELECT "Entry" FROM "Banks" WHERE "Entry" = @BankEntry)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Bank doesn''t exists' AS 'Message'; 
+            RETURN
+        END
+
+        IF NOT EXISTS(SELECT "SWIFTBIC" FROM "Banks" WHERE "SWIFTBIC" = @SWIFTBIC)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','SWIFTBIC already exists' AS 'Message'; 
+            RETURN
+        END
+
+        IF NOT EXISTS(SELECT "Account" FROM "BankAccounts" WHERE "Account" = @AccountEntry)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Account doesn''t exists' AS 'Message'; 
+            RETURN
+        END
+
+    END TRY
+    BEGIN CATCH
+        SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message'; 
+        THROW  
+    END CATCH
