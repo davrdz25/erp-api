@@ -567,13 +567,13 @@ CREATE PROCEDURE CreateBankAccount
 AS
     BEGIN TRY
 
-        IF(@Name.LEN() = 0 OR @Name = '')
+        IF(LEN(@Name) = 0 OR @Name = '')
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid name, cannot be empty' AS 'Message'; 
             RETURN
         END
 
-        IF(@AccountEntry = 0 OR @Account < -1)
+        IF(@AccountEntry = 0 OR @AccountEntry < -1)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid already exists' AS 'Message'; 
             RETURN
