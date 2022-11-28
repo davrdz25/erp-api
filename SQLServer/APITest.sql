@@ -1,8 +1,7 @@
 CREATE DATABASE CRM_DATABASE COLLATE Latin1_General_CS_AS
-
 USE CRM_DATABASE
 
-IF NOT  EXISTS(SELECT *
+/*IF NOT  EXISTS(SELECT *
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Users' )
 BEGIN
@@ -337,7 +336,6 @@ BEGIN
     )
 END
 GO
-/*
 IF NOT  EXISTS(SELECT *
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'BusinessPartners' )
@@ -383,10 +381,10 @@ BEGIN
         "Name" NVARCHAR(100),
         "Level" SMALLINT NOT NULL,
         "Type" SMALLINT NOT NULL CONSTRAINT DF_Accounts_Type DEFAULT -1, 
-        PostableAccount CHAR(1) NOT NULL, 
-        Father INT NOT NULL,
+        PstblAccount CHAR(1) NOT NULL, 
+        FthrEntry INT NOT NULL,
         Balance DECIMAL(19,6),
-        UserSign INT NOT NULL CONSTRAINT DF_Accounts_UserSign DEFAULT -1,
+        UsrSign INT NOT NULL CONSTRAINT DF_Accounts_UsrSign DEFAULT -1,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         CONSTRAINT PK_Accounts_Entry PRIMARY KEY ("Entry"),
@@ -394,9 +392,9 @@ BEGIN
         CONSTRAINT UQ_Accounts_Name UNIQUE ("Name"),
         CONSTRAINT UQ_Accounts_CodeName UNIQUE ("Code", "Name"),
         CONSTRAINT CHK_Accounts_Level CHECK ("Level" BETWEEN 1 AND 10),
-        CONSTRAINT CHK_Accounts_PostbleAccount CHECk (PostableAccount IN ('Y', 'N')),
+        CONSTRAINT CHK_Accounts_PstblAccount CHECk (PstblAccount IN ('Y', 'N')),
         CONSTRAINT CHK_Accounts_Type CHECK ("Type" <> 0 AND "Type" <> 0),
-        CONSTRAINT CHK_Accounts_UserSign CHECK(UserSign <> 0 AND UserSign >= -1)
+        CONSTRAINT CHK_Accounts_UsrSign CHECK(UsrSign <> 0 AND UsrSign >= -1)
     )
 END
 GO
@@ -408,18 +406,18 @@ BEGIN
     (
         "Entry" INT,
         "Code" NVARCHAR(100) NOT NULL,
-        ShortName NVARCHAR(100) NOT NULL,
-        BusinessName NVARCHAR(100),
+        ShrtName NVARCHAR(100) NOT NULL,
+        BsnssName NVARCHAR(100),
         SWIFTBIC NVARCHAR(20),
-        UserSign INT NOT NULL CONSTRAINT DF_Banks_UserSign DEFAULT  -1,
+        UsrSign INT NOT NULL CONSTRAINT DF_Banks_UserSign DEFAULT  -1,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         CONSTRAINT PK_Banks_Entry PRIMARY KEY ("Entry"),
         CONSTRAINT UQ_Banks_Code UNIQUE  ("Code"),
-        CONSTRAINT UQ_Banks_ShortName UNIQUE  (ShortName),
-        CONSTRAINT UQ_Banks_CodeName UNIQUE  ("Code",ShortName),
+        CONSTRAINT UQ_Banks_ShrtName UNIQUE  (ShrtName),
+        CONSTRAINT UQ_Banks_CodeName UNIQUE  ("Code",ShrtName),
         CONSTRAINT UQ_Banks_SWIFTBIC UNIQUE  (SWIFTBIC),
-        CONSTRAINT CHK_Banks_UserSign CHECK (UserSign >= -1 AND UserSign <> 0 )
+        CONSTRAINT CHK_Banks_UserSign CHECK (UsrSign >= -1 AND UsrSign <> 0 )
     )
 END
 GO
