@@ -195,7 +195,6 @@ export default class AccountModel {
                 + _Account.Father + ", "
                 + _Account.Type + ", "
                 + "'" + _Account.PostableAccount + "', "
-                + (_Account.Balance ? _Account.Balance : 0) + ", "
                 + _Account.UserSign + ", "
                 + "'" + _Account.CreateDate + "'"
 

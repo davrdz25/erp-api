@@ -430,7 +430,6 @@ BEGIN
     CREATE TABLE BankAccounts
     (
         "Entry" INT,
-        "Code" NVARCHAR(20) NOT NULL,
         "Name" NVARCHAR(100) NOT NULL,
         Bank INT NOT NULL,
         SWIFTBIC NVARCHAR(20),
@@ -490,7 +489,6 @@ CREATE PROCEDURE CreateAccount
     @Father INT,
     @Type INT,
     @Postable CHAR,
-    @Balance INT = 0,
     @UserSign INT = -1,
     @CreateDate DATETIME
 AS
@@ -539,8 +537,8 @@ AS
 
         SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
         BEGIN TRY
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", Father, "Type", PostableAccount, Balance, UserSign, CreateDate ) 
-            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, @UserSign, @CreateDate)
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", Father, "Type", PostableAccount, UserSign, CreateDate ) 
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @UserSign, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message'; 
             RETURN 
@@ -626,6 +624,12 @@ AS
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Account doesn''t exists' AS 'Message'; 
             RETURN
         END
+
+        INSERT INTO "BankAccounts" ("Entry", "Name", "BnkEntry", "SWIFTBIC", "AcctEntry", "Credit", "DebitBalance", "CreditDebt", "AviableCredit", "CutOffDay", "PayDayLimit", "UsrSign", "CreateDate")
+        VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM "BankAccounts"), @Name, @BankEntry, @SWIFTBIC, @AccountEntry, @Credit, @DebitBalance, @CreditDebt, @AviableCredit, @CutOffDay, @PayDayLimit, -1, GETDATE())
+
+        SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateBankAccount' AS 'Procedure',0 AS 'Line', 'BankAccount Created' AS 'Message';
+        RETURN
 
     END TRY
     BEGIN CATCH
