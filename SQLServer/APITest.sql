@@ -496,28 +496,27 @@ AS
     DECLARE @Prefix  NVARCHAR(18)
     DECLARE @LPrefix NVARCHAR(18)
 
+    BEGIN TRY
+    IF (LEN(@Name) = 0 OR @Name = '') BEGIN
+        SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name cannot be empty' AS 'Message';
+        RETURN
+    END
+
     IF EXISTS(SELECT "Name" FROM "Accounts" WHERE "Name" = @Name) BEGIN
         SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message';  
         RETURN 
-    END 
+    END
 
-    IF  @Level = 1 BEGIN
+    IF @Level = 1 BEGIN
         SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = 1
     
         SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
 
-        BEGIN TRY
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", Father, "Type", PostableAccount, Balance, UserSign, CreateDate ) 
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstngAcct, Balance, UserSign, CreateDate ) 
             VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, @UserSign, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message';
             RETURN
-
-            END TRY
-            BEGIN CATCH
-                SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message'; 
-                THROW  
-        END CATCH
     END
     ELSE BEGIN 
         DECLARE @FatherCode NVARCHAR(18)
@@ -534,19 +533,21 @@ AS
         SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level  AND "Father" = @Father
 
         SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
-        BEGIN TRY
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", Father, "Type", PostableAccount, UserSign, CreateDate ) 
+       
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstngAcct, UserSign, CreateDate ) 
             VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @UserSign, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message'; 
-            RETURN 
+            RETURN
+        END
         END TRY
+        
         BEGIN CATCH
-            SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message'; 
-            THROW  
+            SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
+            THROW
         END CATCH
-    END
 GO
+
 CREATE PROCEDURE CreateBankAccount
     @Name NVARCHAR(MAX),
     @BankEntry INT,
@@ -562,7 +563,6 @@ CREATE PROCEDURE CreateBankAccount
     @CreateDate DATETIME
 AS
     BEGIN TRY
-
         IF(LEN(@Name) = 0 OR @Name = '')
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid name, cannot be empty' AS 'Message'; 
@@ -577,19 +577,19 @@ AS
 
         IF(@Credit = 'Y' AND @DebitBalance > 0)
         BEGIN
-        SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No debit balance if account is credit' AS 'Message'; 
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No debit balance if account is credit' AS 'Message'; 
             RETURN
         END
 
         IF(@Credit = 'Y' AND (@PayDayLimit < 1 AND @PayDayLimit > 31))
         BEGIN
-        SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid Pay day limit if account is credit' AS 'Message'; 
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid Pay day limit if account is credit' AS 'Message'; 
             RETURN
         END
 
         IF(@Credit = 'Y' AND (@CutOffDay < 1 AND @CutOffDay > 31))
         BEGIN
-        SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid cut off day if account is credit' AS 'Message'; 
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid cut off day if account is credit' AS 'Message'; 
             RETURN
         END
 
@@ -628,7 +628,6 @@ AS
 
         SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateBankAccount' AS 'Procedure',0 AS 'Line', 'BankAccount Created' AS 'Message';
         RETURN
-
     END TRY
     BEGIN CATCH
         SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message'; 
