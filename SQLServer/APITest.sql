@@ -550,15 +550,15 @@ GO
 
 CREATE PROCEDURE CreateBankAccount
     @Name NVARCHAR(MAX),
-    @BankEntry INT,
-    @SWIFTBIC INT,
-    @AccountEntry INT,
-    @Credit CHAR,
+    @BankEntry INT = -1,
+    @SWIFTBIC NVARCAHAR,
+    @AccountEntry INT = -1,
+    @Credit CHAR = 'N',
     @DebitBalance INT = 0,
     @CreditDebt INT = 0,
     @AviableCredit INT = 0,
-    @CutOffDay INT = 0,
-    @PayDayLimit INT = 0,
+    @CutOffDay INT = -1,
+    @PayDayLimit INT = -1,
     @UserSign INT = -1,
     @CreateDate DATETIME
 AS
@@ -569,9 +569,15 @@ AS
             RETURN
         END
 
-        IF(@AccountEntry = 0 OR @AccountEntry < -1)
+        IF((@BankEntry = 0 OR @BankEntry < -1) OR @BankEntry = -1)
         BEGIN
-            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid already exists' AS 'Message'; 
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid bank entry' AS 'Message'; 
+            RETURN
+        END
+
+        IF((@AccountEntry = 0 OR @AccountEntry < -1) OR @AccountEntry = -1)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid account entry' AS 'Message'; 
             RETURN
         END
 
