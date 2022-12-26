@@ -471,7 +471,6 @@ BEGIN
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         CONSTRAINT PK_Cards_CardEntry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_Cards_CardCode UNIQUE ("Code"),
         CONSTRAINT UQ_Cards_CardName UNIQUE ("Name"),
         CONSTRAINT UQ_Cards_CardNumber UNIQUE ("Number"),
         CONSTRAINT CHK_Cards_ValidFromMonth CHECK (ValidFromMonth BETWEEN 1 AND 12),
