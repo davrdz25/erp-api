@@ -581,8 +581,8 @@ AS
             RETURN
         END
 
-	IF(@Credit = 'Y' AND @Debit = 'Y')
-	BEGIN
+	    IF(@Credit = 'Y' AND @Debit = 'Y')
+	    BEGIN
             SELECT 500 AS 'Number', 'BankAccount' AS 'Procedure', 'F' AS 'State', 'Bank account must be credit or debit' AS 'Message'
            RETURN
         END
@@ -635,12 +635,15 @@ AS
             RETURN
         END
         
-        IF NOT EXISTS(SELECT "Entry" FROM "Banks" WHERE "Entry" = @BankEntry)
+        IF (@AcctEntry <> -1)
         BEGIN
-            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Bank doesn''t exists' AS 'Message'; 
-            RETURN
+            IF NOT EXISTS(SELECT "Entry" FROM "Banks" WHERE "Entry" = @BankEntry)
+            BEGIN
+                SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Bank doesn''t exists' AS 'Message'; 
+                RETURN
+            END
         END
-
+        
         IF (@SWIFTBIC IS NOT NULL) BEGIN
             IF EXISTS(SELECT "SWIFTBIC" FROM "Banks" WHERE "SWIFTBIC" = @SWIFTBIC)
             BEGIN
