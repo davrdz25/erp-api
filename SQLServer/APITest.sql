@@ -549,9 +549,9 @@ AS
 GO
 
 CREATE PROCEDURE CreateBankAccount
-    @Name NVARCHAR(MAX),
+    @Name NVARCHAR(100),
     @BankEntry INT = -1,
-    @SWIFTBIC NVARCHAR = NULL,
+    @SWIFTBIC NVARCHAR(20) = NULL,
     @AccountEntry INT = -1,
     @Credit CHAR = 'N',
     @DebitBalance INT = 0,
@@ -563,7 +563,7 @@ CREATE PROCEDURE CreateBankAccount
     @CreateDate DATETIME
 AS
     BEGIN TRY
-        IF(LEN(@Name) = 0 OR @Name = '')
+        IF(LEN(@Name) = 0 OR @Name = '' OR @Name IS NULL)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid name' AS 'Message'; 
             RETURN
@@ -579,6 +579,12 @@ AS
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid account entry' AS 'Message'; 
             RETURN
+        END
+
+	IF(@Credit = 'Y' AND @Debit = 'Y')
+	BEGIN
+            SELECT 500 AS 'Number', 'BankAccount' AS 'Procedure', 'F' AS 'State', 'Bank account must be credit or debit' AS 'Message'
+           RETURN
         END
 
         IF(@Credit = 'Y' AND @DebitBalance <> 0)
