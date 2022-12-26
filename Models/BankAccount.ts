@@ -159,7 +159,7 @@ export default class BankAccountModel {
 
 
         return new Promise((resolve, reject) => {
-            const SQLQuery = "INSERT INTO BankAccounts ("
+            const SQLQuery = "EXECUTE CreateBankAccount "
                 + "\"Entry\", "
                 + "\"Code\", "
                 + "\"Name\", "

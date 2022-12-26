@@ -9,7 +9,6 @@ interface StoredProcedureOutput {
     Message: string;
 }
 export default class AccountModel {
-
     public static GetAll() {
         const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") AS \"Key\", "
             + "\"Entry\", "
