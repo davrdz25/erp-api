@@ -429,20 +429,19 @@ BEGIN
     (
         "Entry" INT,
         "Name" NVARCHAR(100) NOT NULL,
-        Bank INT NOT NULL,
+        BnkEntry INT NOT NULL,
         SWIFTBIC NVARCHAR(20),
-        Account INT NOT NULL CONSTRAINT DF_BankAccounts_Account DEFAULT -1,
+        AcctEntry INT NOT NULL CONSTRAINT DF_BankAccounts_Account DEFAULT -1,
         Credit BIT CONSTRAINT DF_BankAccounts_Credit DEFAULT 0,
         DebitBalance DECIMAL (19,6),
         CreditDebt DECIMAL(19,6),
         AviableCredit DECIMAL(19,6),
         CutOffDay INT,
         PayDayLimit INT,
-        UserSign INT NOT NULL CONSTRAINT DF_BankAccounts_UserSign DEFAULT  -1,
+        UsrSign INT NOT NULL CONSTRAINT DF_BankAccounts_UserSign DEFAULT  -1,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         CONSTRAINT PK_BankAccounts_BankAEntry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_BankAccounts_BankACode UNIQUE ("Code"),
         CONSTRAINT UQ_BankAccounts_BankAName UNIQUE ("Name"),
         CONSTRAINT CHK_BankAccounts_CutOffDay CHECK (CutOffDay BETWEEN 1 AND 31),
         CONSTRAINT CHK_BankAccounts_PayDayLimit CHECK (CutOffDay BETWEEN 1 AND 31),
@@ -482,10 +481,11 @@ END
 GO
 CREATE PROCEDURE CreateAccount
     @Name NVARCHAR(MAX),
-    @Level INT,
-    @Father INT,
-    @Type INT,
-    @Postable CHAR,
+    @Level INT = -1,
+    @Father INT = -1,
+    @Type INT = -1,
+    @Balance DECIMAL(19,6) = 0,
+    @Postable CHAR = 'N',
     @UserSign INT = -1,
     @CreateDate DATETIME
 AS
@@ -511,7 +511,7 @@ AS
     
         SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
 
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstngAcct, Balance, UserSign, CreateDate ) 
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstblAccount, Balance, UsrSign, CreateDate ) 
             VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, @UserSign, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message';
@@ -527,13 +527,13 @@ AS
 
         SELECT @FatherCode = "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level - 1
         SET @Prefix = SUBSTRING(@FatherCode,1,(@Level*3)-3)
-        SET  @LPrefix = SUBSTRING(@FatherCode,1,(@Level*3))
+        SET @LPrefix = SUBSTRING(@FatherCode,1,(@Level*3))
 
-        SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level  AND "Father" = @Father
+        SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level  AND "FthrEntry" = @Father
 
         SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
        
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstngAcct, UserSign, CreateDate ) 
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstblAccount, UsrSign, CreateDate ) 
             VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @UserSign, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message'; 
@@ -552,12 +552,14 @@ CREATE PROCEDURE CreateBankAccount
     @BankEntry INT = -1,
     @SWIFTBIC NVARCHAR(20) = NULL,
     @AccountEntry INT = -1,
+    @Debit CHAR = 'Y',
     @Credit CHAR = 'N',
     @DebitBalance INT = 0,
     @CreditDebt INT = 0,
     @AviableCredit INT = 0,
     @CutOffDay INT = -1,
     @PayDayLimit INT = -1,
+    @AcctEntry INT = -1,
     @UserSign INT = -1,
     @CreateDate DATETIME
 AS
