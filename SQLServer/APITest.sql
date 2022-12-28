@@ -433,6 +433,7 @@ BEGIN
         SWIFTBIC NVARCHAR(20),
         AcctEntry INT NOT NULL CONSTRAINT DF_BankAccounts_Account DEFAULT -1,
         Credit BIT CONSTRAINT DF_BankAccounts_Credit DEFAULT 0,
+        CreditLimit DECIMAL(19,6) CONSTRAINT DF_BankAccounts_CreditLimit DEFAULT 0,
         DebitBalance DECIMAL (19,6),
         CreditDebt DECIMAL(19,6),
         AviableCredit DECIMAL(19,6),
@@ -554,6 +555,7 @@ CREATE PROCEDURE CreateBankAccount
     @SWIFTBIC NVARCHAR(20) = NULL,
     @Debit CHAR = 'Y',
     @Credit CHAR = 'N',
+    @CreditLimit DECIMAL(19,6) = 0,
     @DebitBalance INT = 0,
     @CreditDebt INT = 0,
     @AviableCredit INT = 0,
@@ -575,7 +577,7 @@ AS
             RETURN
         END
 
-        IF((@AccountEntry = 0 OR @AccountEntry < -1))
+        IF((@AcctEntry = 0 OR @AcctEntry < -1))
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Invalid account entry' AS 'Message'; 
             RETURN
@@ -652,8 +654,8 @@ AS
             END
         END
 
-        IF (@AccountEntry <> -1) BEGIN
-            IF NOT EXISTS(SELECT "Entry" FROM "Accounts" WHERE "Entry" = @AccountEntry)
+        IF (@AcctEntry <> -1) BEGIN
+            IF NOT EXISTS(SELECT "Entry" FROM "Accounts" WHERE "Entry" = @AcctEntry)
             BEGIN
                 SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','Account doesn''t exists' AS 'Message'; 
                 RETURN
@@ -668,8 +670,8 @@ AS
             END
         END
 
-        INSERT INTO "BankAccounts" ("Entry", "Name", "BnkEntry", "SWIFTBIC", "AcctEntry", "Credit", "DebitBalance", "CreditDebt", "AviableCredit", "CutOffDay", "PayDayLimit", "UsrSign", "CreateDate")
-        VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM "BankAccounts"), @Name, @BankEntry, @SWIFTBIC, @AccountEntry, @Credit, @DebitBalance, @CreditDebt, @AviableCredit, @CutOffDay, @PayDayLimit, -1, GETDATE())
+        INSERT INTO "BankAccounts" ("Entry", "Name", "BnkEntry", "SWIFTBIC", "AcctEntry", "Credit", "DebitBalance", "CreditLimit", "CreditDebt", "AviableCredit", "CutOffDay", "PayDayLimit", "UsrSign", "CreateDate")
+        VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM "BankAccounts"), @Name, @BankEntry, @SWIFTBIC, @AcctEntry, @Credit, @CreditLimit, @DebitBalance, @CreditDebt, @AviableCredit, @CutOffDay, @PayDayLimit, -1, GETDATE())
 
         SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateBankAccount' AS 'Procedure',0 AS 'Line', 'BankAccount Created' AS 'Message';
         RETURN
