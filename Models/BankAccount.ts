@@ -44,7 +44,7 @@ export default class BankAccountModel {
         if (_Bank.SWIFTBIC) {
             Filter.push("SWIFTBIC" + (_Bank.ExactValues === 'Y' ? " = '" + _Bank.SWIFTBIC + "' " : "LIKE '%" + _Bank.Code + "%'"))
         }
-        
+
         if (_Bank.Account) {
             Filter.push("Account" + (_Bank.ExactValues === 'Y' ? " = '" + _Bank.Account + "' " : "LIKE '%" + _Bank.Code + "%'"))
         }
@@ -132,79 +132,21 @@ export default class BankAccountModel {
     }
 
     public static Create(_BankAcct: IBankAccount) {
-        if (!_BankAcct.Name) {
-            throw ({ Message: "Name can't be empty" })
-        }
-
-        if (!_BankAcct.Code) {
-            throw ({ Message: "Code can't be empty" })
-        }
-
-
-        if (_BankAcct.Account <= 0) {
-            throw ({ Message: "Invalid  account" })
-        }
-
-        if (_BankAcct.BankEntry <= 0) {
-            throw ({ Message: "Invalid  bank" })
-        }
-
-        if (_BankAcct.Credit === 'Y' && (_BankAcct.CutOffDay < 1 || _BankAcct.CutOffDay > 31)) {
-            throw ({ Message: "Invalid cut off day" })
-        }
-
-        if (_BankAcct.Credit === 'Y' && (_BankAcct.PayDayLimit < 1 || _BankAcct.PayDayLimit > 31)) {
-            throw ({ Message: "Invalid Pay day limit" })
-        }
-
-
         return new Promise((resolve, reject) => {
             const SQLQuery = "EXECUTE CreateBankAccount "
-                + "\"Entry\", "
-                + "\"Code\", "
-                + "\"Name\", "
-                + "Bank, "
-                + (_BankAcct.SWIFTBIC ? "SWIFTBIC, " : "")
-                + "Account, "
-                + "Credit ,"
-                + (_BankAcct.DebitBalance !== -1 ? "DebitBalance, " : "")
-                + (_BankAcct.Credit ? "CreditDebt, " : "")
-                + (_BankAcct.Credit ? "AviableCredit, " : "")
-                + (_BankAcct.Credit ? "CutOffDate, " : "")
-                + (_BankAcct.Credit ? "PayDayLimit, " : "")
-                + "UserSign, "
-                + "CreateDate"
-                + ") VALUES ("
-                + "(SELECT ISNULL(MAX(\"Entry\"), 0) + 1 \"Entry\" FROM BankAccounts),"
-                + "'" + _BankAcct.Code + "', "
                 + "'" + _BankAcct.Name + "', "
                 + _BankAcct.BankEntry + ", "
                 + _BankAcct.Account + ", "
-                + (_BankAcct.SWIFTBIC ? "'" + _BankAcct.SWIFTBIC + "', " : "")
-                + (_BankAcct.Credit ? "1, " : "0, ")
-                + (_BankAcct.DebitBalance !== -1 ? _BankAcct.DebitBalance + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.CreditDebt + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.AviableCredit + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.CutOffDay + ", " : "")
-                + (_BankAcct.Credit ? _BankAcct.CreateDate + "')" : "")
-
-            Promise.all([this.ExistsCode(_BankAcct.Code), this.ExistsName(_BankAcct.Name), _BankAcct.SWIFTBIC ? this.ExistsSWIFTBIC(_BankAcct.SWIFTBIC) : ""]).then(([_ExistsCode, _ExistsName, _ExistsSWIFTBIC]) => {
-                if (_ExistsCode) {
-                    reject({ Message: "Code already exists" })
-                }
-
-                if (_ExistsName) {
-                    reject({ Message: "Name already exists" })
-                }
-
-                if (_BankAcct.SWIFTBIC) {
-                    if (_ExistsSWIFTBIC) {
-                        reject({ Message: "SWIFTBIC already exists" })
-                    }
-                }
-            }).catch((_Err) => {
-                reject(_Err)
-            })
+                + (_BankAcct.SWIFTBIC !== undefined ? "'" + _BankAcct.SWIFTBIC + "', " : "")
+                + "'" + _BankAcct.Debit + "', "
+                + "'" + _BankAcct.Credit + "', "
+                + _BankAcct.DebitBalance + ", "
+                + _BankAcct.CreditDebt + ", "
+                + _BankAcct.AviableCredit + ", "
+                + _BankAcct.CutOffDay + ", "
+                + _BankAcct.PayDayLimit + ", "
+                + "-1 ,"
+                + "'" + _BankAcct.CreateDate + "'"
 
             MSSQLService.RunQuey(SQLQuery).then((_Created) => {
                 if (_Created.rowsAffected[0] === 1) {

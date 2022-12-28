@@ -5,6 +5,7 @@ export default interface IBankAccount extends Base {
     SWIFTBIC: string,
     Account: number,
     Credit: string,
+    Debit: string,
     DebitBalance: number,
     CreditDebt: number,
     AviableCredit: number,

@@ -550,8 +550,8 @@ GO
 CREATE PROCEDURE CreateBankAccount
     @Name NVARCHAR(100),
     @BankEntry INT = -1,
+    @AcctEntry INT = -1,
     @SWIFTBIC NVARCHAR(20) = NULL,
-    @AccountEntry INT = -1,
     @Debit CHAR = 'Y',
     @Credit CHAR = 'N',
     @DebitBalance INT = 0,
@@ -559,7 +559,6 @@ CREATE PROCEDURE CreateBankAccount
     @AviableCredit INT = 0,
     @CutOffDay INT = -1,
     @PayDayLimit INT = -1,
-    @AcctEntry INT = -1,
     @UserSign INT = -1,
     @CreateDate DATETIME
 AS
