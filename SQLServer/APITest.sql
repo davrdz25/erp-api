@@ -487,7 +487,6 @@ CREATE PROCEDURE CreateAccount
     @Type INT = -1,
     @Balance DECIMAL(19,6) = 0,
     @Postable CHAR = 'N',
-    @UserSign INT = -1,
     @CreateDate DATETIME
 AS
     DECLARE @Code NVARCHAR(18)
@@ -533,7 +532,7 @@ AS
             SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
 
             INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FatherEntry, "Type", PostableAcct, Balance, UserSign, CreateDate ) 
-            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, @UserSign, @CreateDate)
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, -1, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message';
             RETURN
@@ -555,7 +554,7 @@ AS
             SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
        
             INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FatherEntry, "Type", PostableAcct, UserSign, CreateDate ) 
-            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @UserSign, @CreateDate)
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, -1, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message'; 
             RETURN
@@ -603,12 +602,6 @@ AS
             RETURN
         END
 
-	    IF(@Credit = 'Y' AND @Debit = 'Y')
-	    BEGIN
-            SELECT 500 AS 'Number', 'BankAccount' AS 'Procedure', 'F' AS 'State', 'Bank account must be credit or debit' AS 'Message'
-           RETURN
-        END
-
         IF(@Credit = 'Y' AND @DebitBalance <> 0)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No debit balance if account is credit' AS 'Message'; 
@@ -627,25 +620,32 @@ AS
             RETURN
         END
 
-        IF(@Debit = 'Y' AND @CutOffDay <> -1)
+        IF(@Credit = 'Y' AND @CutOffDay <> -1)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No cut off day on debit account' AS 'Message'; 
             RETURN
         END
+        
 
-        IF(@Debit = 'Y' AND @PayDayLimit <> -1)
+        IF(@Credit = 'N' AND @PayDayLimit <> -1)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No pay day limit on debit account' AS 'Message'; 
             RETURN
         END
 
-        IF(@Debit = 'Y' AND @CreditDebt <> -1)
+        IF(@Credit = 'N' AND @CreditLimit <> 0)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No credit debt on debit account' AS 'Message'; 
             RETURN
         END
 
-        IF(@Debit = 'Y' AND @AviableCredit <> -1)
+        IF(@Credit = 'N' AND @CreditDebt <> 0)
+        BEGIN
+            SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No credit debt on debit account' AS 'Message'; 
+            RETURN
+        END
+
+        IF(@Credit = 'N' AND @AviableCredit <> 0)
         BEGIN
             SELECT 500 AS 'Number','BankAccount' AS 'Procedure','F' AS 'State','No aviable credit on debit account' AS 'Message'; 
             RETURN

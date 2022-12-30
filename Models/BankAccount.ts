@@ -1,21 +1,30 @@
 import MSSQLService from "../Services/Database";
 import IBankAccount from "../Interfaces/BankAccount"
+import { IResult } from "mssql";
+
+interface StoredProcedureOutput {
+    ErrNumber: number,
+    ProcName: string,
+    State: string,
+    Message: string;
+}
 
 export default class BankAccountModel {
     public static GetAll() {
         const SQLQuery = "SELECT "
             + "\"Entry\", "
-            + "\"Code\", "
             + "\"Name\", "
-            + "Bank, "
+            + "BankEntry, "
+            + "AcctEntry, "
             + "SWIFTBIC, "
             + "Account, "
             + "Credit, "
-            + "DebitBalance, "
+            + "CreditLimit, "
             + "CreditDebt, "
             + "AviableCredit, "
             + "CutOffDay, "
             + "PayDayLimit, "
+            + "DebitBalance, "
             + "UserSign, "
             + "CreateDate, "
             + "UpdateDate "
@@ -45,23 +54,24 @@ export default class BankAccountModel {
             Filter.push("SWIFTBIC" + (_Bank.ExactValues === 'Y' ? " = '" + _Bank.SWIFTBIC + "' " : "LIKE '%" + _Bank.Code + "%'"))
         }
 
-        if (_Bank.Account) {
-            Filter.push("Account" + (_Bank.ExactValues === 'Y' ? " = '" + _Bank.Account + "' " : "LIKE '%" + _Bank.Code + "%'"))
+        if (_Bank.AcctEntry) {
+            Filter.push("Account" + (_Bank.ExactValues === 'Y' ? " = '" + _Bank.AcctEntry + "' " : "LIKE '%" + _Bank.Code + "%'"))
         }
 
         const SQLQuery = "SELECT "
             + "\"Entry\", "
-            + "\"Code\", "
             + "\"Name\", "
-            + "Bank, "
+            + "BankEntry, "
+            + "AcctEntry, "
             + "SWIFTBIC, "
             + "Account, "
             + "Credit, "
-            + "DebitBalance"
+            + "CreditLimit, "
             + "CreditDebt, "
             + "AviableCredit, "
             + "CutOffDay, "
             + "PayDayLimit, "
+            + "DebitBalance, "
             + "UserSign, "
             + "CreateDate, "
             + "UpdateDate "
@@ -136,27 +146,25 @@ export default class BankAccountModel {
             const SQLQuery = "EXECUTE CreateBankAccount "
                 + "'" + _BankAcct.Name + "', "
                 + _BankAcct.BankEntry + ", "
-                + _BankAcct.Account + ", "
-                + (_BankAcct.SWIFTBIC !== undefined ? "'" + _BankAcct.SWIFTBIC + "', " : "")
-                + "'" + _BankAcct.Debit + "', "
+                + _BankAcct.AcctEntry + ", "
+                + (_BankAcct.SWIFTBIC ? "'" + _BankAcct.SWIFTBIC + "', " : "NULL, ")
                 + "'" + _BankAcct.Credit + "', "
-                + _BankAcct.DebitBalance + ", "
+                + _BankAcct.CreditLimit + ", "
                 + _BankAcct.CreditDebt + ", "
                 + _BankAcct.AviableCredit + ", "
                 + _BankAcct.CutOffDay + ", "
                 + _BankAcct.PayDayLimit + ", "
-                + "-1 ,"
+                + _BankAcct.DebitBalance + ", "
                 + "'" + _BankAcct.CreateDate + "'"
 
-            MSSQLService.RunQuey(SQLQuery).then((_Created) => {
-                if (_Created.rowsAffected[0] === 1) {
-                    resolve(true)
-                } else {
-                    resolve(false)
-                }
-            }).catch((_Err) => {
-                reject(_Err)
-            })
+                MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
+                    if (_Created.recordset[0].ErrNumber === 500) {
+                        reject({ Message: _Created.recordset })
+                    }
+                    resolve(_Created.recordset)
+                }).catch((_Err) => {
+                    reject(_Err)
+                })
         })
     }
 

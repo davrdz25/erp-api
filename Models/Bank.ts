@@ -1,7 +1,13 @@
 import { IResult } from "mssql";
 import MSSQLService from "../Services/Database";
-import Bank from "../Interfaces/Bank"
 import IBank from "../Interfaces/Bank";
+
+interface StoredProcedureOutput {
+    ErrNumber: number,
+    ProcName: string,
+    State: string,
+    Message: string;
+}
 
 export default class BankModel {
     public static GetAll() {
@@ -30,30 +36,30 @@ export default class BankModel {
         let Filter: any[] = []
 
         if (_Bank.Code) {
-            Filter.push("BankCode " + (_Bank.ExactValues  === 'Y' ? " = '" + _Bank.Code + "' " : "LIKE '%" + _Bank.Code + "%'"))
+            Filter.push("BankCode " + (_Bank.ExactValues === 'Y' ? " = '" + _Bank.Code + "' " : "LIKE '%" + _Bank.Code + "%'"))
         }
 
         if (_Bank.ShortName) {
-            Filter.push("ShortName " + (_Bank.ExactValues  === 'Y' ? " = '" + _Bank.ShortName + "' " : "LIKE '%" + _Bank.ShortName + "%'"))
+            Filter.push("ShortName " + (_Bank.ExactValues === 'Y' ? " = '" + _Bank.ShortName + "' " : "LIKE '%" + _Bank.ShortName + "%'"))
         }
 
         if (_Bank.SWIFTBIC) {
             Filter.push("SWIFTBIC " + (_Bank.SWIFTBIC ? " = '" + _Bank.SWIFTBIC + "' " : "LIKE '%" + _Bank.SWIFTBIC + "%'"))
         }
-        
+
         return new Promise((resolve, reject) => {
             const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") as \"Key\", "
-            + "\"Entry\", "
-            + "\"Code\", "
-            + "ShortName, "
-            + "BusinessName, "
-            + "AcctEntry, "
-            + "SWIFTBIC, "
-            + "UserSign, "
-            + "CreateDate, "
-            + "UpdateDate "
-            + "FROM Banks"
-            + "WHERE " + (Filter.join(_Bank.ExactValues  === 'Y' ? " AND " : " OR "))
+                + "\"Entry\", "
+                + "\"Code\", "
+                + "ShortName, "
+                + "BusinessName, "
+                + "AcctEntry, "
+                + "SWIFTBIC, "
+                + "UserSign, "
+                + "CreateDate, "
+                + "UpdateDate "
+                + "FROM Banks"
+                + "WHERE " + (Filter.join(_Bank.ExactValues === 'Y' ? " AND " : " OR "))
 
             MSSQLService.RunQuey(SQLQuery).then((_Banks: IResult<MSSQLService>) => {
                 if (_Banks.recordset.length !== 0) {
@@ -123,28 +129,26 @@ export default class BankModel {
 
     public static Create(_Bank: IBank) {
         if (!_Bank.ShortName) {
-            throw({ Message: "Short Name cannot be empty" })
+            throw ({ Message: "Short Name cannot be empty" })
         }
 
         return new Promise((resolve, reject) => {
-                const SQLQuery = "EXECUTE CreateBank "
-                    + "'" + _Bank.ShortName + "', "
-                    + (_Bank.SWIFTBIC ? "'" + _Bank.SWIFTBIC + "', " : "NULL, ")
-                    + (_Bank.BusinessName ? "'" + _Bank.BusinessName + "', " : "NULL, ")
-                    + _Bank.AcctEntry + ", "
-                    + "'" + _Bank.CreateDate + "'"
+            const SQLQuery = "EXECUTE CreateBank "
+                + "'" + _Bank.ShortName + "', "
+                + (_Bank.SWIFTBIC ? "'" + _Bank.SWIFTBIC + "', " : "NULL, ")
+                + (_Bank.BusinessName ? "'" + _Bank.BusinessName + "', " : "NULL, ")
+                + _Bank.AcctEntry + ", "
+                + "'" + _Bank.CreateDate + "'"
 
-                MSSQLService.RunQuey(SQLQuery).then((_Created) => {
-                    if (_Created.rowsAffected[0] !== 0) {
-                        resolve(true)
-                    } else {
-                        resolve(false)
-                    }
-                }).catch((Err) => {
-                    reject(Err)
-                })
-
+            MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
+                if (_Created.recordset[0].ErrNumber === 500) {
+                    reject({ Message: _Created.recordset })
+                }
+                resolve(_Created.recordset)
+            }).catch((_Err) => {
+                reject(_Err)
             })
+        })
     }
 
     // public static Update() {
@@ -165,7 +169,7 @@ export default class BankModel {
     //             if (_ExistShortName) {
     //                 reject({ Message: "Name already exists" })
     //             }
-                
+
     //             MSSQLService.RunQuey(SQLQuery).then((_Updated) => {
     //                 if (_Updated.rowsAffected[0] !== 0) {
     //                     resolve(true)

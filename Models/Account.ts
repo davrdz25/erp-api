@@ -193,7 +193,6 @@ export default class AccountModel {
                 + _Account.Father + ", "
                 + _Account.Type + ", "
                 + "'" + _Account.PostableAccount + "', "
-                + _Account.UserSign + ", "
                 + "'" + _Account.CreateDate + "'"
 
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
