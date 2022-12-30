@@ -381,10 +381,10 @@ BEGIN
         "Name" NVARCHAR(100),
         "Level" SMALLINT NOT NULL,
         "Type" SMALLINT NOT NULL CONSTRAINT DF_Accounts_Type DEFAULT -1, 
-        PstblAccount CHAR(1) NOT NULL, 
-        FthrEntry INT NOT NULL,
+        PostableAcct CHAR(1) NOT NULL CONSTRAINT DF_Accounts_Postable DEFAULT 'Y', 
+        FatherEntry INT NOT NULL,
         Balance DECIMAL(19,6),
-        UsrSign INT NOT NULL CONSTRAINT DF_Accounts_UsrSign DEFAULT -1,
+        UserSign INT NOT NULL CONSTRAINT DF_Accounts_UserSign DEFAULT -1,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         CONSTRAINT PK_Accounts_Entry PRIMARY KEY ("Entry"),
@@ -392,9 +392,9 @@ BEGIN
         CONSTRAINT UQ_Accounts_Name UNIQUE ("Name"),
         CONSTRAINT UQ_Accounts_CodeName UNIQUE ("Code", "Name"),
         CONSTRAINT CHK_Accounts_Level CHECK ("Level" BETWEEN 1 AND 10),
-        CONSTRAINT CHK_Accounts_PstblAccount CHECk (PstblAccount IN ('Y', 'N')),
+        CONSTRAINT CHK_Accounts_PstblAccount CHECk (PostableAcct IN ('Y', 'N')),
         CONSTRAINT CHK_Accounts_Type CHECK ("Type" <> 0 AND "Type" <> 0),
-        CONSTRAINT CHK_Accounts_UsrSign CHECK(UsrSign <> 0 AND UsrSign >= -1)
+        CONSTRAINT CHK_Accounts_UsrSign CHECK(UserSign <> 0 AND UserSign >= -1)
     )
 END
 GO
@@ -405,19 +405,19 @@ BEGIN
     CREATE TABLE Banks
     (
         "Entry" INT,
-        "Code" NVARCHAR(100) NOT NULL,
-        ShrtName NVARCHAR(100) NOT NULL,
-        BsnssName NVARCHAR(100),
+        ShortName NVARCHAR(100) NOT NULL,
+        BussinesName NVARCHAR,
         SWIFTBIC NVARCHAR(20),
-        UsrSign INT NOT NULL CONSTRAINT DF_Banks_UserSign DEFAULT  -1,
+        AcctEntry INT NOT NULL CONSTRAINT DF_Banks_Account DEFAULT -1,
+        UserSign INT NOT NULL CONSTRAINT DF_Banks_UserSign DEFAULT  -1,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         CONSTRAINT PK_Banks_Entry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_Banks_Code UNIQUE  ("Code"),
-        CONSTRAINT UQ_Banks_ShrtName UNIQUE  (ShrtName),
-        CONSTRAINT UQ_Banks_CodeName UNIQUE  ("Code",ShrtName),
+        CONSTRAINT UQ_Banks_ShrtName UNIQUE  (ShortName),
+        CONSTRAINT UQ_Banks_BussinesName UNIQUE  (BussinesName),
+        CONSTRAINT UQ_Banks_Names UNIQUE (ShortName, BussinesName),
         CONSTRAINT UQ_Banks_SWIFTBIC UNIQUE  (SWIFTBIC),
-        CONSTRAINT CHK_Banks_UserSign CHECK (UsrSign >= -1 AND UsrSign <> 0 )
+        CONSTRAINT CHK_Banks_UserSign CHECK (UserSign >= -1 AND UserSign <> 0 )
     )
 END
 GO
@@ -429,21 +429,22 @@ BEGIN
     (
         "Entry" INT,
         "Name" NVARCHAR(100) NOT NULL,
-        BnkEntry INT NOT NULL,
-        SWIFTBIC NVARCHAR(20),
+        BankEntry INT NOT NULL,
         AcctEntry INT NOT NULL CONSTRAINT DF_BankAccounts_Account DEFAULT -1,
+        SWIFTBIC NVARCHAR(20),
         Credit BIT CONSTRAINT DF_BankAccounts_Credit DEFAULT 0,
         CreditLimit DECIMAL(19,6) CONSTRAINT DF_BankAccounts_CreditLimit DEFAULT 0,
-        DebitBalance DECIMAL (19,6),
         CreditDebt DECIMAL(19,6),
         AviableCredit DECIMAL(19,6),
         CutOffDay INT,
         PayDayLimit INT,
+        DebitBalance DECIMAL (19,6),
         UsrSign INT NOT NULL CONSTRAINT DF_BankAccounts_UserSign DEFAULT  -1,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
-        CONSTRAINT PK_BankAccounts_BankAEntry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_BankAccounts_BankAName UNIQUE ("Name"),
+        CONSTRAINT PK_BankAccounts_BankAcctEntry PRIMARY KEY ("Entry"),
+        CONSTRAINT UQ_BankAccounts_BankAcctName UNIQUE ("Name"),
+        CONSTRAINT CHK_BankAccounts_Bank CHECK (BankEntry <> 0 AND BankEntry >= -1),
         CONSTRAINT CHK_BankAccounts_CutOffDay CHECK (CutOffDay BETWEEN 1 AND 31),
         CONSTRAINT CHK_BankAccounts_PayDayLimit CHECK (CutOffDay BETWEEN 1 AND 31),
     )
@@ -456,23 +457,22 @@ BEGIN
     CREATE TABLE Cards
     (
         "Entry" INT,
-        "Code" NVARCHAR(20) NOT NULL,
-        "Name" NVARCHAR(100) NOT NULL,
         "Number" NVARCHAR(4) NOT NULL,
         ValidFromMonth INT NOT NULL,
         ValidFromYear INT NOT NULL,
         ValidUntilMonth INT NOT NULL,
         ValidUntilYear INT NOT NULL,
-        Digital BIT NOT NULL CONSTRAINT DF_Cards_Digital DEFAULT 0,
-        Account INT NOT NULL,
-        Bank INT NOT NULL,
-        BankAccount INT NOT NULL,
+        Digital CHAR NOT NULL CONSTRAINT DF_Cards_Digital DEFAULT 'N',
+        Credit CHAR NOT NULL CONSTRAINT DF_Cards_Credit DEFAULT 'N',
+        AcctEntry INT NOT NULL,
+        BankEntry INT NOT NULL,
         UserSign INT NOT NULL CONSTRAINT DF_Cards_UserSign DEFAULT  -1,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         CONSTRAINT PK_Cards_CardEntry PRIMARY KEY ("Entry"),
-        CONSTRAINT UQ_Cards_CardName UNIQUE ("Name"),
         CONSTRAINT UQ_Cards_CardNumber UNIQUE ("Number"),
+        CONSTRAINT CHK_Cards_AcctEntry CHECK (AcctEntry <> 0 AND AcctEntry >= -1),
+        CONSTRAINT CHK_Cards_BankEntry CHECK (BankEntry <> 0 AND BankEntry >= -1),
         CONSTRAINT CHK_Cards_ValidFromMonth CHECK (ValidFromMonth BETWEEN 1 AND 12),
         CONSTRAINT CHK_Cards_ValidFromYear CHECK (ValidFromYear BETWEEN 0 AND 99),
         CONSTRAINT CHK_Cards_ValidUntilMonth CHECK (ValidUntilMonth BETWEEN 0 AND 99),
@@ -497,55 +497,75 @@ AS
     DECLARE @LPrefix NVARCHAR(18)
 
     BEGIN TRY
-    IF (LEN(@Name) = 0 OR @Name = '') BEGIN
-        SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name cannot be empty' AS 'Message';
-        RETURN
-    END
+        IF (LEN(@Name) = 0 OR @Name = '') BEGIN
+            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name cannot be empty' AS 'Message';
+            RETURN
+        END
 
-    IF EXISTS(SELECT "Name" FROM "Accounts" WHERE "Name" = @Name) BEGIN
-        SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message';  
-        RETURN 
-    END
+        IF (LEN(@Name) > 100) BEGIN
+            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name cannot be greather than 100 characters' AS 'Message';
+            RETURN
+        END
 
-    IF @Level = 1 BEGIN
-        SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = 1
+        IF(@Type = -1 AND @Postable = 'Y') BEGIN
+            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid type if account is postable' AS 'Message';
+            RETURN
+        END
+
+        IF (@Father = 0 OR @Father < -1) BEGIN
+            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid value father' AS 'Message';
+            RETURN
+        END
+
+        IF (@Father = -1 AND @Level = 1) BEGIN
+            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid value father if account level is 1' AS 'Message';
+            RETURN
+        END
+
+        IF EXISTS(SELECT "Name" FROM "Accounts" WHERE "Name" = @Name) BEGIN
+            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message';  
+            RETURN 
+        END
+
+        IF @Level = 1 BEGIN
+            SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = 1
     
-        SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
+            SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
 
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstblAccount, Balance, UsrSign, CreateDate ) 
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FatherEntry, "Type", PostableAcct, Balance, UserSign, CreateDate ) 
             VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, @UserSign, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message';
             RETURN
-    END
-    ELSE BEGIN 
-        DECLARE @FatherCode NVARCHAR(18)
-
-        IF NOT EXISTS(SELECT "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level -1) BEGIN
-            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Father doesn''t exists' AS 'Message'; 
-            RETURN
         END
+        ELSE BEGIN 
+            DECLARE @FatherCode NVARCHAR(18)
 
-        SELECT @FatherCode = "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level - 1
-        SET @Prefix = SUBSTRING(@FatherCode,1,(@Level*3)-3)
-        SET @LPrefix = SUBSTRING(@FatherCode,1,(@Level*3))
+            IF NOT EXISTS(SELECT "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level -1) BEGIN
+                SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Father doesn''t exists' AS 'Message'; 
+                RETURN
+            END
 
-        SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE "Level" = @Level  AND "FthrEntry" = @Father
+            SELECT @FatherCode = "Code" FROM "Accounts" WHERE "Entry" = @Father AND "Level" = @Level - 1
+            SET @Prefix = SUBSTRING(@FatherCode,1,(@Level*3)-3)
+            SET @LPrefix = SUBSTRING(@FatherCode,1,(@Level*3))
 
-        SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
+            SELECT @Sequential = CASE COUNT(*) WHEN 0 THEN 1 ELSE COUNT(*) + 1 END FROM "Accounts" WHERE Level = @Level  AND FatherEntry = @Father
+
+            SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
        
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FthrEntry, "Type", PstblAccount, UsrSign, CreateDate ) 
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FatherEntry, "Type", PostableAcct, UserSign, CreateDate ) 
             VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @UserSign, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message'; 
             RETURN
         END
-        END TRY
+    END TRY
         
-        BEGIN CATCH
-            SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
-            THROW
-        END CATCH
+    BEGIN CATCH
+        SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
+        THROW
+    END CATCH
 GO
 
 CREATE PROCEDURE CreateBankAccount
@@ -670,7 +690,7 @@ AS
             END
         END
 
-        INSERT INTO "BankAccounts" ("Entry", "Name", "BnkEntry", "SWIFTBIC", "AcctEntry", "Credit", "DebitBalance", "CreditLimit", "CreditDebt", "AviableCredit", "CutOffDay", "PayDayLimit", "UsrSign", "CreateDate")
+        INSERT INTO "BankAccounts" ("Entry", "Name", "BankEntry", "SWIFTBIC", "AcctEntry", "Credit", "DebitBalance", "CreditLimit", "CreditDebt", "AviableCredit", "CutOffDay", "PayDayLimit", "UsrSign", "CreateDate")
         VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM "BankAccounts"), @Name, @BankEntry, @SWIFTBIC, @AcctEntry, @Credit, @CreditLimit, @DebitBalance, @CreditDebt, @AviableCredit, @CutOffDay, @PayDayLimit, -1, GETDATE())
 
         SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateBankAccount' AS 'Procedure',0 AS 'Line', 'BankAccount Created' AS 'Message';

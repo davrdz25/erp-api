@@ -38,16 +38,16 @@ export default class AccountRoute {
         })
     }
 
-    @Put()
-    public Mofify(@Body({ required: true }) Account: IAccount, @Res() response: any){
-        return AccountModel.Update(Account).then((_Updated) => {
-            if (_Updated) {
-                return response.status(200).send({ Message: "Account updated" })
-            } else {
-                return response.status(400).send({ Message: "Account can't be updated" })
-            }
-        }).catch((_Err) => {
-            return response.status(500).send(_Err)
-        })
-    }
+    // @Put()
+    // public Mofify(@Body({ required: true }) Account: IAccount, @Res() response: any){
+    //     return AccountModel.Update(Account).then((_Updated) => {
+    //         if (_Updated) {
+    //             return response.status(200).send({ Message: "Account updated" })
+    //         } else {
+    //             return response.status(400).send({ Message: "Account can't be updated" })
+    //         }
+    //     }).catch((_Err) => {
+    //         return response.status(500).send(_Err)
+    //     })
+    // }
 }

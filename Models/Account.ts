@@ -15,9 +15,9 @@ export default class AccountModel {
             + "\"Code\", "
             + "\"Name\", "
             + "\"Level\", "
-            + "\"FthrEntry\", "
             + "\"Type\", "
-            + "PstblAccount, "
+            + "PostableAcct, "
+            + "FatherEntry, "
             + "Balance, "
             + "UserSign, "
             + "CreateDate, "
@@ -60,21 +60,20 @@ export default class AccountModel {
             Filter.push("Type = " + _Param.Type)
         }
 
-        const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY Entry) AS \"Key\", "
+        const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") AS \"Key\", "
             + "\"Entry\", "
             + "\"Code\", "
             + "\"Name\", "
             + "\"Level\", "
-            + "\"FthrEntry\", "
             + "\"Type\", "
-            + "PstblAccount, "
+            + "PostableAcct, "
+            + "FatherEntry, "
             + "Balance, "
             + "UserSign, "
             + "CreateDate, "
             + "UpdateDate "
-            + "FROM Accounts "
+            + "FROM Accounts"
             + "WHERE " + (Filter.join(_Param.ExactValues === 'Y' ? " AND " : " OR "))
-        console.log(SQLQuery);
 
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
@@ -167,8 +166,8 @@ export default class AccountModel {
             throw ({ Message: "Name cannot be empty" })
         }
 
-        if (_Account.Code && _Account.Code.length > 25) {
-            throw ({ Messge: "Code cannot be more than 25 characters" })
+        if (_Account.Code) {
+            throw ({ Messge: "Invalid value Code" })
         }
 
         if (_Account.Name && _Account.Name.length > 100) {
@@ -179,7 +178,7 @@ export default class AccountModel {
             throw ({ Message: "Invalid value Father" })
         }
 
-        if (_Account.Level < 1) {
+        if (_Account.Level === 0 && _Account.Level < -1) {
             throw ({ Message: "Invalid value Level" })
         }
 
@@ -208,75 +207,42 @@ export default class AccountModel {
         })
     }
 
-    public static Update(_Account: IAccount) {
-        if (!_Account.Code) {
-            throw ({ Message: "Code cannot be empty" })
-        }
+    // public static Update(_Account: IAccount) {
 
-        if (_Account.Code && _Account.Code.length > 20) {
-            throw ({ Messge: "Code cannot be more than 20 characters" })
-        }
+    //     if (_Account.Name && _Account.Name.length > 100) {
+    //         throw ({ Messge: "Name cannot be more than 100 characters" })
+    //     }
 
-        if (_Account.Name && _Account.Name.length > 100) {
-            throw ({ Messge: "Name cannot be more than 100 characters" })
-        }
+    //     return new Promise((resolve, reject) => {
+    //         const SQLQuery = "UPDATE Accounts SET "
+    //             + (_Account.Name ? + "\"Name\" = '" + _Account.Name + "', " : "")
+    //             + (_Account.UpdateFather ? "FatherAcct = " + _Account.Father + ", " : "")
+    //             + (_Account.UpdateBalance ? "Balance = '" + (_Account.Balance ? _Account.Balance : 0) + ", " : "")
+    //             + (_Account.Level !== 0 ? + "\"Level\" = " + _Account.Level + ", " : "")
+    //             + "UpdateDate = '" + _Account.UpdateDate + "'"
+    //             + "WHERE AcctCode = '" + _Account.Code + "'"
 
-        if (_Account.Father !== -1) {
-            if (_Account.Father === 0 || _Account.Father < -1) {
-                throw ({ Message: "Invalid value Father" })
-            }
-        }
+    //         Promise.all(([this.CodeExists(_Account.Code), this.NameExists(_Account.Name)])).then(([_CodeExists, _NameExists]) => {
+    //             if (!_CodeExists) {
+    //                 throw ({ Message: "Code doesn't exists" })
+    //             }
 
-        if (_Account.Level !== -1) {
-            if (_Account.Level < 1) {
-                throw ({ Message: "Invalid value Level" })
-            }
-        }
+    //             if (_NameExists) {
+    //                 throw ({ Message: "Name already exists" })
+    //             }
 
-        if (_Account.Level !== -1 && _Account.Father !== 1) {
-            if (_Account.Level >= 1 && _Account.Father === -1) {
-                throw ({ Message: "If account level is greater than 1, account must have a father" })
-            }
-        }
-
-        if (_Account.PostableAccount && _Account.Type === -1) {
-            throw ({ Message: "Account cannot be postable if type is None" })
-        }
-
-        if (_Account.Type === -1 && !_Account.PostableAccount) {
-            throw ({ Message: "If Type is None account must be postable" })
-        }
-
-        return new Promise((resolve, reject) => {
-            const SQLQuery = "UPDATE Accounts SET "
-                + (_Account.Name ? + "\"Name\" = '" + _Account.Name + "', " : "")
-                + (_Account.UpdateFather ? "FatherAcct = " + _Account.Father + ", " : "")
-                + (_Account.UpdateBalance ? "Balance = '" + (_Account.Balance ? _Account.Balance : 0) + ", " : "")
-                + (_Account.Level !== 0 ? + "\"Level\" = " + _Account.Level + ", " : "")
-                + "UpdateDate = '" + _Account.UpdateDate + "'"
-                + "WHERE AcctCode = '" + _Account.Code + "'"
-
-            Promise.all(([this.CodeExists(_Account.Code), this.NameExists(_Account.Name)])).then(([_CodeExists, _NameExists]) => {
-                if (!_CodeExists) {
-                    throw ({ Message: "Code doesn't exists" })
-                }
-
-                if (_NameExists) {
-                    throw ({ Message: "Name already exists" })
-                }
-
-                MSSQLService.RunQuey(SQLQuery).then((_Updated) => {
-                    if (_Updated.rowsAffected[0] !== 0) {
-                        resolve(true)
-                    } else {
-                        resolve(false)
-                    }
-                }).catch((_Err) => {
-                    reject(_Err)
-                })
-            }).catch((_Err) => {
-                reject(_Err)
-            })
-        })
-    }
+    //             MSSQLService.RunQuey(SQLQuery).then((_Updated) => {
+    //                 if (_Updated.rowsAffected[0] !== 0) {
+    //                     resolve(true)
+    //                 } else {
+    //                     resolve(false)
+    //                 }
+    //             }).catch((_Err) => {
+    //                 reject(_Err)
+    //             })
+    //         }).catch((_Err) => {
+    //             reject(_Err)
+    //         })
+    //     })
+    // }
 }
