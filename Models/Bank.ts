@@ -127,22 +127,12 @@ export default class BankModel {
         }
 
         return new Promise((resolve, reject) => {
-                const SQLQuery = "INSERT INTO Banks "
-                + "(\"Entry\", "
-                + "\"Code\", "
-                + "ShortName, "
-                + (_Bank.BusinessName ? "BusinessName, " : "")
-                + (_Bank.SWIFTBIC ? "SWIFTBIC, " : "")
-                + "UserSign, "
-                + "CreateDate) "
-                + "VALUES "
-                + "((SELECT ISNULL(MAX(\"Entry\"), 0) + 1 \"Entry\" FROM Banks), "
-                + "'" + _Bank.Code + "', "
-                + "'" + _Bank.ShortName + "', "
-                + (_Bank.BusinessName ? "'" + _Bank.BusinessName + "', " : "")
-                + (_Bank.SWIFTBIC ? "'" + _Bank.SWIFTBIC + "', " : "")
-                + (_Bank.UserSign !== 0 ? _Bank.UserSign : -1) + ", "
-                + "'" + _Bank.CreateDate + "')"
+                const SQLQuery = "EXECUTE CreateBank "
+                    + "'" + _Bank.ShortName + "', "
+                    + (_Bank.SWIFTBIC ? "'" + _Bank.SWIFTBIC + "', " : "NULL, ")
+                    + (_Bank.BusinessName ? "'" + _Bank.BusinessName + "', " : "NULL, ")
+                    + _Bank.AcctEntry + ", "
+                    + "'" + _Bank.CreateDate + "'"
 
                 MSSQLService.RunQuey(SQLQuery).then((_Created) => {
                     if (_Created.rowsAffected[0] !== 0) {

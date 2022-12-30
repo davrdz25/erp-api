@@ -700,3 +700,45 @@ AS
         SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message'; 
         THROW  
     END CATCH
+GO
+CREATE PROCEDURE CreateBank
+    @ShortName NVARCHAR(100),
+    @BussinesName NVARCHAR(254),
+    @SWIFTBIC  NVARCHAR(50),
+    @AcctEntry INT = -1,
+    @CreateDate DATETIME
+    AS
+        BEGIN TRY
+            IF(LEN(@ShortName) = 0 OR @ShortName = '') BEGIN
+                SELECT 500 AS 'Number','CreateBank' AS 'Procedure','F' AS 'State','Short name cannot be empty' AS 'Message';
+                RETURN
+            END
+
+            IF(LEN(@ShortName) > 100) BEGIN
+                SELECT 500 AS 'Number','CreateBank' AS 'Procedure','F' AS 'State','Short name cannot be greater than 100 characteres' AS 'Message';
+                RETURN
+            END
+
+            IF(@AcctEntry = 0 OR @AcctEntry < -1) BEGIN
+                SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid value account' AS 'Message';
+                RETURN
+            END
+
+            IF(@AcctEntry <> -1) BEGIN
+                IF NOT EXISTS(SELECT "Entry" FROM Accounts WHERE "Entry" = @AcctEntry) BEGIN
+                    SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid value account, doesn''t exists' AS 'Message';
+                    RETURN
+                END
+            END
+
+            INSERT INTO Banks ("Entry", ShortName, BussinesName, SWIFTBIC, AcctEntry, UserSign, CreateDate) 
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Banks), @ShortName, @BussinesName, @SWIFTBIC, @AcctEntry, -1, @CreateDate)
+
+            SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateBank' AS 'Procedure',0 AS 'Line', 'Bank Created' AS 'Message'; 
+            RETURN
+
+        END TRY
+        BEGIN CATCH
+            SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
+            THROW
+        END CATCH
