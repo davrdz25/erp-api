@@ -25,9 +25,9 @@ export default class BankRoute {
     public Add(@Body({ required: true }) _Bank: IBank, @Res() response: any) {
         return BankModel.Create(_Bank).then((_Created) => {
             if (_Created) {
-                return response.status(200).send({ Message: "Bank Created" })
+                return response.status(200).send(_Created)
             } else {
-                return response.status(400).send({ Message: "Bank can't be created" })
+                return response.status(400).send(_Created)
             }
         }).catch((_Err) => {
             return response.status(500).send(_Err)
