@@ -1,4 +1,4 @@
-import { IResult } from "mssql";
+import { IResult, MSSQLError } from "mssql";
 import MSSQLService from "../Services/Database";
 import IAccount from "../Interfaces/Account";
 
@@ -195,14 +195,16 @@ export default class AccountModel {
                 + _Account.Type + ", "
                 + "'" + _Account.PostableAccount + "', "
                 + "'" + _Account.CreateDate + "'"
-
+                console.log("procedimiento ")
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
+                console.log(_Created)
                 if (_Created.recordset[0].ErrNumber === 500) {
                     reject({ Message: _Created.recordset })
                 }
                 resolve(_Created.recordset)
             }).catch((_Err) => {
-                reject(_Err)
+                console.log(_Err.Info.message)
+                reject(_Err.Info.message)
             })
         })
     }
