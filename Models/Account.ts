@@ -73,9 +73,10 @@ export default class AccountModel {
             + "UserSign, "
             + "CreateDate, "
             + "UpdateDate "
-            + "FROM Accounts"
+            + "FROM Accounts "
             + "WHERE " + (Filter.join(_Param.ExactValues === 'Y' ? " AND " : " OR "))
 
+            console.log(SQLQuery)
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
                 console.log(_Accounts)
@@ -199,13 +200,11 @@ export default class AccountModel {
 
             console.log(SQLQuery)
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
-                console.log(_Created)
                 if (_Created.recordset[0].ErrNumber === 500) {
                     reject({ Message: _Created.recordset })
                 }
                 resolve(_Created.recordset)
             }).catch((_Err) => {
-                console.log(_Err.Info.message)
                 reject({"Message": _Err.Info.message})
             })
         })
