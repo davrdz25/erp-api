@@ -190,12 +190,14 @@ export default class AccountModel {
         return new Promise((resolve, reject) => {
             const SQLQuery = "EXECUTE CreateAccount" +
                 "'" + _Account.Name + "', "
-                + _Account.Level + ", "
-                + _Account.Father + ", "
+                + Number(_Account.Level) + ", "
+                + Number(_Account.Father) + ", "
                 + _Account.Type + ", "
-                + "'" + _Account.PostableAccount + "', "
+                + (_Account.Balance ? _Account.Balance : 0 + ", ")
+                + (_Account.PostableAccount ? "'Y', " : "'N', ")
                 + "'" + _Account.CreateDate + "'"
-                console.log("procedimiento ")
+
+            console.log(SQLQuery)
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
                 console.log(_Created)
                 if (_Created.recordset[0].ErrNumber === 500) {
@@ -204,7 +206,7 @@ export default class AccountModel {
                 resolve(_Created.recordset)
             }).catch((_Err) => {
                 console.log(_Err.Info.message)
-                reject(_Err.Info.message)
+                reject({"Message": _Err.Info.message})
             })
         })
     }
