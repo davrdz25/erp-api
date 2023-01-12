@@ -13,9 +13,8 @@ export default class BankModel {
     public static GetAll() {
         const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") as \"Key\", "
             + "\"Entry\", "
-            + "\"Code\", "
             + "ShortName, "
-            + "BusinessName, "
+            + "BussinesName, "
             + "AcctEntry, "
             + "SWIFTBIC, "
             + "UserSign, "
@@ -26,8 +25,9 @@ export default class BankModel {
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Banks) => {
                 resolve(_Banks.recordset)
-            }).catch((Err) => {
-                reject(Err)
+            }).catch((_Err) => {
+                console.log(_Err)
+                reject({"Message": _Err.Info.message})
             })
         })
     }
@@ -50,9 +50,8 @@ export default class BankModel {
         return new Promise((resolve, reject) => {
             const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") as \"Key\", "
                 + "\"Entry\", "
-                + "\"Code\", "
                 + "ShortName, "
-                + "BusinessName, "
+                + "BusisnesName, "
                 + "AcctEntry, "
                 + "SWIFTBIC, "
                 + "UserSign, "
@@ -68,7 +67,7 @@ export default class BankModel {
                     reject({ Message: "No banks found" })
                 }
             }).catch((_Err) => {
-                reject(_Err)
+                reject({"Message": _Err.Info.message})
             })
         })
     }
@@ -146,7 +145,7 @@ export default class BankModel {
                 }
                 resolve(_Created.recordset)
             }).catch((_Err) => {
-                reject(_Err)
+                reject({"Message": _Err.Info.message})
             })
         })
     }
