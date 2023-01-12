@@ -406,7 +406,7 @@ BEGIN
     (
         "Entry" INT,
         ShortName NVARCHAR(100) NOT NULL,
-        BussinesName NVARCHAR,
+        BussinesName NVARCHAR(254),
         SWIFTBIC NVARCHAR(20),
         AcctEntry INT NOT NULL CONSTRAINT DF_Banks_Account DEFAULT -1,
         UserSign INT NOT NULL CONSTRAINT DF_Banks_UserSign DEFAULT  -1,
@@ -414,9 +414,6 @@ BEGIN
         UpdateDate DATETIME,
         CONSTRAINT PK_Banks_Entry PRIMARY KEY ("Entry"),
         CONSTRAINT UQ_Banks_ShrtName UNIQUE  (ShortName),
-        CONSTRAINT UQ_Banks_BussinesName UNIQUE  (BussinesName),
-        CONSTRAINT UQ_Banks_Names UNIQUE (ShortName, BussinesName),
-        CONSTRAINT UQ_Banks_SWIFTBIC UNIQUE  (SWIFTBIC),
         CONSTRAINT CHK_Banks_UserSign CHECK (UserSign >= -1 AND UserSign <> 0 )
     )
 END
@@ -532,7 +529,7 @@ AS
             SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
 
             INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FatherEntry, "Type", PostableAcct, Balance, UserSign, CreateDate ) 
-            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, -1, @CreateDate)
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, NULL, -1, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message';
             RETURN
@@ -553,8 +550,8 @@ AS
 
             SET @Code = CONCAT(@Prefix,CONVERT(NVARCHAR(3),FORMAT(@Sequential,'D3')),REPLICATE('0',18-@level*3))
        
-            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FatherEntry, "Type", PostableAcct, UserSign, CreateDate ) 
-            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, -1, @CreateDate)
+            INSERT INTO Accounts ("Entry", "Code", "Name", "Level", FatherEntry, "Type", PostableAcct, Balance, UserSign, CreateDate ) 
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Accounts), @Code, @Name, @Level, @Father, @Type, @Postable, @Balance, -1, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateAccount' AS 'Procedure',0 AS 'Line', 'Account Created' AS 'Message'; 
             RETURN
@@ -731,8 +728,22 @@ CREATE PROCEDURE CreateBank
                 END
             END
 
+            IF(@SWIFTBIC IS NOT NULL AND @SWIFTBIC <> '') BEGIN
+                IF EXISTS( SELECT SWIFTBIC FROM Banks WHERE SWIFTBIC = @SWIFTBIC ) BEGIN
+                    SELECT 500 AS 'Number','CreateBank' AS 'Procedure','F' AS 'State','Invalid value SWIFTBIC, already exists' AS 'Message';
+                    RETURN 
+                END
+            END
+
+            IF(@BussinesName IS NOT NULL AND @BussinesName <> '') BEGIN
+                IF EXISTS( SELECT SWIFTBIC FROM Banks WHERE BussinesName = @BussinesName ) BEGIN
+                    SELECT 500 AS 'Number','CreateBank' AS 'Procedure','F' AS 'State','Invalid value BussinesName, already exists' AS 'Message';
+                    RETURN 
+                END
+            END
+
             INSERT INTO Banks ("Entry", ShortName, BussinesName, SWIFTBIC, AcctEntry, UserSign, CreateDate) 
-            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Banks), @ShortName, @BussinesName, @SWIFTBIC, @AcctEntry, -1, @CreateDate)
+            VALUES ((SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Banks), @ShortName, @BussinesName , @SWIFTBIC , @AcctEntry, -1, @CreateDate)
 
             SELECT  200 AS 'Number',0 AS Severity,'S' AS 'State','CreateBank' AS 'Procedure',0 AS 'Line', 'Bank Created' AS 'Message'; 
             RETURN
