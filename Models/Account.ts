@@ -198,7 +198,6 @@ export default class AccountModel {
                 + (_Account.PostableAccount ? "'Y', " : "'N', ")
                 + "'" + _Account.CreateDate + "'"
 
-
             console.log( _Account, SQLQuery)
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
                 if (_Created.recordset[0].ErrNumber === 500) {
