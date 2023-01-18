@@ -9,6 +9,21 @@ interface StoredProcedureOutput {
     Message: string;
 }
 
+interface IAcct {
+    Key: string
+    Entry: number
+    Code: string
+    Name: string
+    Level: number
+    Type: number
+    PostableAcct: boolean
+    FatherEntry: number
+    Balance: number
+    UserSign: number
+    CreateDate: number
+    UpdateDate: number
+}
+
 export default class AccountModel {
     public static GetAll() {
         const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") AS \"Key\", "
@@ -26,13 +41,20 @@ export default class AccountModel {
             + "FROM Accounts"
 
         return new Promise((resolve, reject) => {
-            MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
-                if (_Accounts.recordset.length !== 0) {
-                    resolve(_Accounts.recordset)
+            
+            MSSQLService.RunQuey(SQLQuery).then((_Accounts) => {
+                console.log(_Accounts.recordsets);
+                
+                if (_Accounts.recordset.length !== 0) {     
+                    _Accounts.recordset.map((_acct: any, idx: any) => {
+                        _Accounts.recordset[idx].PostableAcct = _acct[idx].PostableAcct === 'Y' ? true: false
+                    })              
+                    resolve( _Accounts.recordset)
                 } else {
                     reject({ Message: "No accounts found" })
                 }
             }).catch((_Err) => {
+                console.log(_Err)
                 reject(_Err)
             })
         })
@@ -184,7 +206,7 @@ export default class AccountModel {
             throw ({ Message: "Invalid value Level" })
         }
 
-        if (_Account.Type === -1 && _Account.PostableAccount === 'Y') {
+        if (_Account.Type === -1 && _Account.PostableAccount) {
             throw ({ Message: "Postable account cannot be title type" })
         }
 
