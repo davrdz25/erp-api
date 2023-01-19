@@ -139,6 +139,7 @@ export default class BankModel {
                 + _Bank.AcctEntry + ", "
                 + "'" + _Bank.CreateDate + "'"
 
+            console.log(SQLQuery)
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
                 if (_Created.recordset[0].ErrNumber === 500) {
                     reject({ Message: _Created.recordset })

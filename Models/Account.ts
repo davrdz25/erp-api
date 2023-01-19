@@ -9,21 +9,6 @@ interface StoredProcedureOutput {
     Message: string;
 }
 
-interface IAcct {
-    Key: string
-    Entry: number
-    Code: string
-    Name: string
-    Level: number
-    Type: number
-    PostableAcct: boolean
-    FatherEntry: number
-    Balance: number
-    UserSign: number
-    CreateDate: number
-    UpdateDate: number
-}
-
 export default class AccountModel {
     public static GetAll() {
         const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") AS \"Key\", "
@@ -42,22 +27,21 @@ export default class AccountModel {
 
         return new Promise((resolve, reject) => {
             
-            MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
-                console.log(_Accounts.recordset.length);
-                                
-                if (_Accounts.recordset.length !== 0) {                                                                             
-                    for(let i = 0; _Accounts.recordset.length -1; i++){
-                        //console.log(_Accounts.recordset[i].PostableAcct) 
-                       // _Accounts.recordset[i].PostableAcct = _Accounts.recordset[i].PostableAcct === "Y" ? true : false
-                    }
+            MSSQLService.RunQuey(SQLQuery).then((_Accounts) => {              
+                if (_Accounts.recordset.length !== 0) {      
+                    _Accounts.recordsets[0].map((_acct: any) => {
+                        if(_acct.PostableAcct === 'Y'){
+                            _acct.PostableAcct = true
+                        } else {
+                            _acct.PostableAcct = false
+                        }
+                    })
 
                     resolve( _Accounts.recordset)
-
                 } else {
                     reject({ Message: "No accounts found" })
                 }
             }).catch((_Err) => {
-                console.log(_Err)
                 reject(_Err)
             })
         })
@@ -103,9 +87,15 @@ export default class AccountModel {
 
             console.log(SQLQuery)
         return new Promise((resolve, reject) => {
-            MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
-                console.log(_Accounts)
+            MSSQLService.RunQuey(SQLQuery).then((_Accounts) => {
                 if (_Accounts.recordset.length !== 0) {
+                    _Accounts.recordsets[0].map((_acct: any) => {
+                        if(_acct.PostableAcct === 'Y'){
+                            _acct.PostableAcct = true
+                        } else {
+                            _acct.PostableAcct = false
+                        }
+                    })
                     resolve(_Accounts.recordset)
                 } else {
                     reject({ Message: "No accounts found" })
@@ -193,10 +183,6 @@ export default class AccountModel {
             throw ({ Message: "Name cannot be empty" })
         }
 
-        if (_Account.Code) {
-            throw ({ Messge: "Invalid value Code" })
-        }
-
         if (_Account.Name && _Account.Name.length > 100) {
             throw ({ Messge: "Name cannot be more than 100 characters" })
         }
@@ -209,7 +195,7 @@ export default class AccountModel {
             throw ({ Message: "Invalid value Level" })
         }
 
-        if (_Account.Type === -1 && _Account.PostableAccount) {
+        if (_Account.Type === -1 && _Account.PostableAcct) {
             throw ({ Message: "Postable account cannot be title type" })
         }
 
@@ -220,7 +206,7 @@ export default class AccountModel {
                 + Number(_Account.Father) + ", "
                 + _Account.Type + ", "
                 + (_Account.Balance ? _Account.Balance : 0 + ", ")
-                + (_Account.PostableAccount ? "'Y', " : "'N', ")
+                + (_Account.PostableAcct ? "'Y', " : "'N', ")
                 + "'" + _Account.CreateDate + "'"
 
             console.log( _Account, SQLQuery)
