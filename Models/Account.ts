@@ -42,14 +42,17 @@ export default class AccountModel {
 
         return new Promise((resolve, reject) => {
             
-            MSSQLService.RunQuey(SQLQuery).then((_Accounts) => {
-                console.log(_Accounts.recordsets);
-                
-                if (_Accounts.recordset.length !== 0) {     
-                    _Accounts.recordset.map((_acct: any, idx: any) => {
-                        _Accounts.recordset[idx].PostableAcct = _acct[idx].PostableAcct === 'Y' ? true: false
-                    })              
+            MSSQLService.RunQuey(SQLQuery).then((_Accounts: IResult<MSSQLService>) => {
+                console.log(_Accounts.recordset.length);
+                                
+                if (_Accounts.recordset.length !== 0) {                                                                             
+                    for(let i = 0; _Accounts.recordset.length -1; i++){
+                        //console.log(_Accounts.recordset[i].PostableAcct) 
+                       // _Accounts.recordset[i].PostableAcct = _Accounts.recordset[i].PostableAcct === "Y" ? true : false
+                    }
+
                     resolve( _Accounts.recordset)
+
                 } else {
                     reject({ Message: "No accounts found" })
                 }
