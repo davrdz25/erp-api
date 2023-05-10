@@ -370,6 +370,24 @@ BEGIN
 END;
 GO
 */
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'QRCodes')
+BEGIN
+    CREATE TABLE QRCodes 
+    (
+        "Entry" INT,
+        "Name" NVARCHAR NOT NULL,
+        "Data" NTEXT NOT NULL,
+        "ImagePath" NVARCHAR NOT NULL,
+        UserSign INT NOT NULL CONSTRAINT DF_QRCodes_UserSign DEFAULT -1,
+        CreateDate DATE NOT NULL,
+        UpdateDate DATE,
+        CONSTRAINT PK_QRCodes_Entry PRIMARY KEY ("Entry"),
+        CONSTRAINT UQ_QRCodes_Name UNIQUE ("Name"),
+        CONSTRAINT CHK_QRCodes_UserSign CHECK (UserSign >= 0 AND UserSign <> 0)
+    )
+END
+GO
 IF NOT  EXISTS(SELECT *
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Accounts' )
