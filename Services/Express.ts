@@ -10,7 +10,7 @@ import PaymentCategoriesRoute from '../Routes/PaymentCategories'
 import PaymentRoute from '../Routes/Payments'
 
 export default class ExpressService {
-    public startService(Port: Number) {
+    public static startService(Port: Number) {
         const server = createExpressServer({
             cors: {
                 exposedHeaders: ["auth-token"]

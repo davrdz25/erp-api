@@ -1,4 +1,4 @@
-import { ConnectionPool, IResult, MSSQLError, Transaction } from "mssql";
+import { ConnectionPool, IResult, MSSQLError } from "mssql";
 
 export default class MSSQLService{
     public static RunQuey(Query: string): Promise<any> {
