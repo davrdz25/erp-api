@@ -11,6 +11,16 @@ GET http://localhost:3001/api/v1/Payments
 GET http://localhost:3001/api/v1/Accounts?Name=aho&ExactValues=N
 GET http://localhost:3001/api/v1/Accounts?Entry=1
 
+POST http://localhost:3001/api/v1/QRCode HTTP/1.1
+content-Type: application/json
+
+{
+    "Name": "tessdt",
+    "Data": "www.google.com",
+    "UserSign": -1,
+    "CreateDate": "20230101"
+}
+
 POST http://localhost:3001/api/v1/Payments HTTP/1.1
 content-Type: application/json
 
