@@ -1,4 +1,3 @@
-import { QRCode } from "qrcode";
 import { Body, Get, JsonController, Post, QueryParam, Res } from "routing-controllers";
 import QRCodeModel from "../Models/QRCode";
 import IQRCode from "../Interfaces/QRCode";
