@@ -23,11 +23,15 @@ export default class QRCodeModel {
 
     public static Create(_NewQRCode: IQRCode) {
         return new Promise((resolve, reject) => {
-            const folder = RandomNameGeneration.generateRandomString(2)
+            let folder = RandomNameGeneration.generateRandomString(2)
             const name = RandomNameGeneration.generateRandomString(10)
 
             if(!existsSync("./QRCodes/" + folder ))
                 mkdirSync("./QRCodes/" + folder)
+            else
+                folder = RandomNameGeneration.generateRandomString(2)
+            
+
 
             QRCode.toFile("./QRCodes/" + folder + "/" + name + ".svg", _NewQRCode.Data, {
                 type: "svg",
