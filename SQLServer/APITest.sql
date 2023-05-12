@@ -1,46 +1,39 @@
 CREATE DATABASE CRM_DATABASE COLLATE Latin1_General_CS_AS
 USE CRM_DATABASE
 
-/*IF NOT  EXISTS(SELECT *
+IF NOT  EXISTS(SELECT *
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Users' )
 BEGIN
     CREATE TABLE Users
     (
-        UserEntry INT NOT NULL,
-        UserCode VARCHAR(20) NOT NULL,
-        UserName VARCHAR(100) NOT NULL,
-        Remarks VARCHAR(200),
-        GroupEntry INT NOT NULL CONSTRAINT DF_Users_GroupEntry DEFAULT -1,
-        RoleEntry INT NOT NULL CONSTRAINT DF_Users_RoleEntry DEFAULT -1,
-        EmployeeEntry INT NOT NULL CONSTRAINT DF_USers_EmployeeEntry DEFAULT -1,
-        MobilePhone VARCHAR(20),
-        Email VARCHAR (100),
+        "Entry" INT NOT NULL,
+        "Code" VARCHAR(20) NOT NULL,
+        "Name" VARCHAR(100) NOT NULL,
+        Comments VARCHAR(200),
         isLocked CHAR NOT NULL CONSTRAINT DF_Users_isLocked DEFAULT 'N',
         isActive CHAR NOT NULL CONSTRAINT DF_Users_isActive DEFAULT 'Y',
         isLoggedIn CHAR NOT NULL CONSTRAINT DF_Users_isLoggedIn DEFAULT 'N',
-        PasswordHash BINARY(64) NOT NULL,
-        Salt UNIQUEIDENTIFIER NOT NULL,
+        Password BINARY(64) NOT NULL,
+        UUID UNIQUEIDENTIFIER NOT NULL,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         UserSign INT NOT NULL CONSTRAINT DF_Users_UserSign DEFAULT -1,
-        CONSTRAINT PK_Users_UserEntry PRIMARY KEY (UserEntry),
-        CONSTRAINT CHK_Users_UserEntry CHECK (UserEntry >= 1),
-        CONSTRAINT UQ_Users_Code UNIQUE (UserCode),
-        CONSTRAINT UQ_Users_Name UNIQUE (UserName),
-        CONSTRAINT UQ_Users_CodeName UNIQUE(UserCode, UserName),
-        CONSTRAINT CHK_Users_GroupNum CHECK (GroupEntry >= -1 AND GroupEntry <> 0),
-        CONSTRAINT CHK_Users_EmployeeNum CHECK (EmployeeEntry >= -1),
+        CONSTRAINT PK_Users_Entry PRIMARY KEY (UserEntry),
+        CONSTRAINT CHK_Users_Entry CHECK (UserEntry >= 1),
+        CONSTRAINT UQ_Users_Code UNIQUE (Code),
+        CONSTRAINT UQ_Users_Name UNIQUE (Name),
+        CONSTRAINT UQ_Users_CodeName UNIQUE(Code, Name),
         CONSTRAINT CHK_Users_Locked CHECK (isLocked IN ('Y','N')),
         CONSTRAINT CHK_Users_Active CHECK (isActive IN ('Y','N')),
-        CONSTRAINT CHK_Users_UserSign CHECK (UserSign >= -1 AND UserSign <> 0 ),
         CONSTRAINT CHK_Users_LoggedIn CHECK (isLoggedIn IN ('Y','N')),
+        CONSTRAINT CHK_Users_UserSign CHECK (UserSign >= -1 AND UserSign <> 0 )
     );
 END
 --INSERT INTO Users (ID, UserEntry, UserCode ,UserName,  PasswordHash, Salt, CreateDate, UserSign)
 --VALUES(1,1,'sys_admin', 'Sytem Administrator', HASHBYTES('SHA2_512', 'rdx600rew..Z$zXLHN8!X2zYsgK7uT&YXU9(YoMRFTTyNAWRQdQ7Njiik7zomrrJ8RE$frWDEeB' + CONVERT(NVARCHAR(36),CONVERT(uniqueidentifier, '1a9945a7-f82b-4aaa-81be-f5135e428a56'))),CONVERT(uniqueidentifier,'1a9945a7-f82b-4aaa-81be-f5135e428a56'),GETDATE(),-1)
 GO
-IF NOT  EXISTS(SELECT *
+/*IF NOT  EXISTS(SELECT *
 FROM INFORMATION_SCHEMA.TABLES
 WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'UserGroups' )
 BEGIN
