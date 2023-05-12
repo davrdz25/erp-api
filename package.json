@@ -12,6 +12,7 @@
   "author": "David Rodriguez",
   "license": "ISC",
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/morgan": "^1.9.3",
     "@types/mssql": "^8.1.1",
     "@types/qrcode": "^1.5.0",
@@ -25,6 +26,7 @@
     "typescript": "^4.9.4"
   },
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "mssql": "^9.0.1",
     "qrcode": "^1.5.3",
