@@ -8,7 +8,6 @@ import AccountRoute from '../Routes/Accounts'
 import BankAccountRoute from '../Routes/BankAccount'
 import PaymentCategoriesRoute from '../Routes/PaymentCategories'
 import PaymentRoute from '../Routes/Payments'
-import QRGenerator from '../Routes/QRGenerator'
 
 export default class ExpressService {
     public static startService(Port: Number) {
@@ -20,7 +19,7 @@ export default class ExpressService {
             validation: false,
             middlewares: [morgan(":method :url :status :res[content-length] - :response-time ms") as any],
             routePrefix: '/api/v1/',
-            controllers: [BankRoute, AccountRoute, BankAccountRoute, PaymentCategoriesRoute, PaymentRoute, QRGenerator ] as any,
+            controllers: [BankRoute, AccountRoute, BankAccountRoute, PaymentCategoriesRoute, PaymentRoute ] as any,
         })
 
         server.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
