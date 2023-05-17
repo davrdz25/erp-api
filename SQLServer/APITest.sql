@@ -14,21 +14,99 @@ BEGIN
         isLocked CHAR NOT NULL CONSTRAINT DF_Users_isLocked DEFAULT 'N',
         isActive CHAR NOT NULL CONSTRAINT DF_Users_isActive DEFAULT 'Y',
         isLoggedIn CHAR NOT NULL CONSTRAINT DF_Users_isLoggedIn DEFAULT 'N',
-        Password BINARY(64) NOT NULL,
+        "Password" BINARY(64) NOT NULL,
         UUID UNIQUEIDENTIFIER NOT NULL,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         UserSign INT NOT NULL CONSTRAINT DF_Users_UserSign DEFAULT -1,
-        CONSTRAINT PK_Users_Entry PRIMARY KEY (UserEntry),
-        CONSTRAINT CHK_Users_Entry CHECK (UserEntry >= 1),
-        CONSTRAINT UQ_Users_Code UNIQUE (Code),
-        CONSTRAINT UQ_Users_Name UNIQUE (Name),
-        CONSTRAINT UQ_Users_CodeName UNIQUE(Code, Name),
+        CONSTRAINT PK_Users_Entry PRIMARY KEY ("Entry"),
+        CONSTRAINT CHK_Users_Entry CHECK ("Entry" >= 1),
+        CONSTRAINT UQ_Users_Code UNIQUE ("Code"),
+        CONSTRAINT UQ_Users_Name UNIQUE ("Name"),
+        CONSTRAINT UQ_Users_CodeName UNIQUE("Code", "Name"),
         CONSTRAINT CHK_Users_Locked CHECK (isLocked IN ('Y','N')),
         CONSTRAINT CHK_Users_Active CHECK (isActive IN ('Y','N')),
         CONSTRAINT CHK_Users_LoggedIn CHECK (isLoggedIn IN ('Y','N')),
         CONSTRAINT CHK_Users_UserSign CHECK (UserSign >= -1 AND UserSign <> 0 )
     );
+END
+GO
+CREATE PROCEDURE CreateUser
+    @Code NVARCHAR(20),
+    @Name NVARCHAR(100),
+    @Comments NVARCHAR(200),
+    @isLocked CHAR,
+    @isActive CHAR,
+    @isLoggedIn CHAR,
+    @Salt NVARCHAR(64),
+    @Password NVARCHAR(254),
+    @UserSign INT,
+    @CreateDate DATE
+AS
+BEGIN
+    BEGIN TRY
+        IF(@Code = '') BEGIN
+            SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Code cannot be empty' AS 'Message';
+            RETURN
+        END
+
+        IF(@Name = '') BEGIN
+            SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Name cannot be empty' AS 'Message';
+            RETURN
+        END
+
+        IF(@Password = '') BEGIN
+            SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Name cannot be empty' AS 'Message';
+            RETURN
+        END
+
+        IF EXISTS (SELECT * FROM Users WHERE "Code" = @Code)
+        BEGIN
+            SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Code already exists' AS 'Message';
+            RETURN
+        END
+
+        IF EXISTS (SELECT * FROM Users WHERE "Name" = @Name)
+        BEGIN
+            SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Name already exists' AS 'Message';
+            RETURN
+        END
+
+        DECLARE @Entry INT = (SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Users)
+        DECLARE @UUID UNIQUEIDENTIFIER = NEWID()
+
+        INSERT INTO Users (
+            "Entry",
+            "Code",
+            "Name",
+            Comments,
+            isLocked,
+            isActive,
+            isLoggedIn,
+            "Password",
+            UUID,
+            CreateDate,
+            UserSign
+        )
+        VALUES (
+            @Entry,
+            @Code,
+            @Name,
+            @Comments,
+            @isLocked,
+            @isActive,
+            @isLoggedIn,
+            HASHBYTES('SHA_512', @Password + @Salt + CAST(@UUID AS NVARCHAR(36))),
+            @UUID,
+            @CreateDate,
+            @UserSign
+        )
+
+    END TRY
+    BEGIN CATCH
+        SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
+        THROW
+    END CATCH
 END
 --INSERT INTO Users (ID, UserEntry, UserCode ,UserName,  PasswordHash, Salt, CreateDate, UserSign)
 --VALUES(1,1,'sys_admin', 'Sytem Administrator', HASHBYTES('SHA2_512', 'rdx600rew..Z$zXLHN8!X2zYsgK7uT&YXU9(YoMRFTTyNAWRQdQ7Njiik7zomrrJ8RE$frWDEeB' + CONVERT(NVARCHAR(36),CONVERT(uniqueidentifier, '1a9945a7-f82b-4aaa-81be-f5135e428a56'))),CONVERT(uniqueidentifier,'1a9945a7-f82b-4aaa-81be-f5135e428a56'),GETDATE(),-1)
