@@ -1,13 +1,7 @@
 import { Body, Get, JsonController, Post, Put, QueryParams,Res } from "routing-controllers";
 import IAccount from "../Interfaces/Account";
 import AccountModel from "../Models/Account";
-
-interface StoredProcedureOutput {
-    ErrNumber: number,
-    ProcName: string,
-    State: string,
-    Message: string; 
-}
+import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
 
 @JsonController('Accounts')
 export default class AccountRoute {
