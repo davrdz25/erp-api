@@ -22,6 +22,17 @@ content-Type: application/json
     "CreateDate": "20230101"
 }
 
+POST http://localhost:3001/api/v1/Users HTTP/1.1
+content-Type: application/json
+
+{
+    "Code": "sys_admin",
+    "Name": "System administrator",
+    "Password": "rdx600rew..",
+    "UserSign": 1,
+    "CreateDate": "20230101"
+}
+
 POST http://localhost:3001/api/v1/Payments HTTP/1.1
 content-Type: application/json
 
