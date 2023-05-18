@@ -1,13 +1,7 @@
-import { IResult, MSSQLError } from "mssql";
+import { IResult } from "mssql";
 import MSSQLService from "../Services/Database";
 import IAccount from "../Interfaces/Account";
-
-interface StoredProcedureOutput {
-    ErrNumber: number,
-    ProcName: string,
-    State: string,
-    Message: string;
-}
+import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
 
 export default class AccountModel {
     public static GetAll() {
