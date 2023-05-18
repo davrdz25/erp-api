@@ -87,7 +87,7 @@ BEGIN
             @Code,
             @Name,
             @Comments,
-            HASHBYTES('SHA_512', @Password + @Salt + CAST(@UUID AS NVARCHAR(36))),
+            HASHBYTES('SHA2_512', @Password + @Salt + CONVERT(NVARCHAR(36), @UUID)),
             @UUID,
             @CreateDate,
             @UserSign
