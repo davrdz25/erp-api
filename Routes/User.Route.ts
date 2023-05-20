@@ -1,10 +1,18 @@
-import { Body, JsonController, Post, Res } from "routing-controllers";
+import { Body, Get, JsonController, Param, Post, QueryParam, Res } from "routing-controllers";
 import IUser from "../Interfaces/User";
 import UserModel from "../Models/User.Model";
-import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
 
 @JsonController('Users')
 export default class UserRoute {
+    @Get("/:Entry")
+    public Search(@Res() response: any, @Param("Entry") _Entry: number ){
+        return UserModel.Search(_Entry).then((_User) => {
+            return response.status(200).send(_User)
+        }).catch((_Err) => {
+            return response.status(500).send(_Err)
+        })
+    }
+
     @Post()
     public Add(@Body({required: true}) NewUser: IUser, @Res() response: any){
         return UserModel.CreateUser(NewUser).then((_User: any) => {
