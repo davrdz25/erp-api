@@ -1,8 +1,10 @@
-import { Body, Get, JsonController, Param, Post, QueryParam, Res } from "routing-controllers";
+import { Body, Get, Header, JsonController, Param, Post, QueryParam, Res } from "routing-controllers";
 import IUser from "../Interfaces/User";
 import UserModel from "../Models/User.Model";
+import SessionModel from "../Models/Session.Model";
+import ISession from "../Interfaces/Session";
 
-@JsonController('Users')
+@JsonController("Users")
 export default class UserRoute {
     @Get("/:Entry")
     public Search(@Res() response: any, @Param("Entry") _Entry: number ){
@@ -21,11 +23,4 @@ export default class UserRoute {
             return response.status(500).send(_Err)
         })
     }
-
-    @Post("/Login")
-    public Login(@Body({required: true}) _Session: any, @Res() response: Response)
-    {
-        
-    }
-
 }

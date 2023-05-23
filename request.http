@@ -10,18 +10,19 @@ GET http://localhost:3001/api/v1/Payments
 
 GET http://localhost:3001/api/v1/Accounts?Name=aho&ExactValues=N
 GET http://localhost:3001/api/v1/Accounts?Entry=1
-GET http://localhost:3001/api/v1/Users/1
+GET http://localhost:3001/api/v1/Users
 
 
 GET http://localhost:3001/api/v1/QRCode
 
-POST http://localhost:3001/api/v1/QRCode HTTP/1.1
+POST http://localhost:3001/api/v1/Session HTTP/1.1
 content-Type: application/json
 
 {
-    "Data": "https://wa.me/+525578171624?text=Prueba",
-    "UserSign": 1,
-    "CreateDate": "20230101"
+    "Entry": 1,
+    "Code": "sys_admin",
+    "Password": "sodfhsldkf",
+    "LoginDate": "20210101"
 }
 
 POST http://localhost:3001/api/v1/Users HTTP/1.1

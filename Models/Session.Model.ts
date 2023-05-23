@@ -9,20 +9,21 @@ export default class SessionModel {
         ${_Session.Entry},
         '${_Session.Code}',
         '${_Session.Password}', 
-        '${process.env.SaltPass}, '
+        '${process.env.SaltPass}',
         -1,
         '${_Session.LoginDate}'
         `
+        console.log(SQLQuery);
+        
         return new Promise((resolve, reject) => {
-            MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
-                resolve(_Created.output)
-            }).catch((_Err: IResult<StoredProcedureOutput>) => {
-                reject(_Err.output)
+            MSSQLService.RunQuey(SQLQuery).then((_Created) => {
+                if(_Created.recordset.ErrNumber !== 200)
+                    reject(_Created.recordset)
+
+                resolve(_Created)
+            }).catch((_Err: IResult<any>) => {
+                reject(_Err.recordset)
             })
         })
-    } 
-    
-    public static Update(_Session: ISession){
-
     }
 }
