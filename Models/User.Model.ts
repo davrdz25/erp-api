@@ -5,7 +5,6 @@ import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
 
 export default class UserModel {
     public static CreateUser(_NewUser: IUser){
-
         const SQLQuery: string = `EXECUTE CreateUser  
                                     '${_NewUser.Code}',
                                     '${_NewUser.Name}',
@@ -49,6 +48,24 @@ export default class UserModel {
         })
     }
 
+    public static ExistsCode(_Code: string): Promise<boolean>{
+        const SQLQuery = `SELECT COUNT("Code") "Contar" FROM Users WHERE "Code" = ${_Code}`
+        console.log(SQLQuery);
+        
+        return new Promise((resolve, reject) => {
+            MSSQLService.RunQuey(SQLQuery).then((_Result: IResult<any>) => {
+                if(_Result.recordset[0].Contar === 0){
+                    resolve(false)
+                }
+                else {
+                    resolve(true)
+                }
+            }).catch((_Err) => {
+                reject({Message: _Err})
+            })
+        })
+    }
+
     public static Search(_Param: number | IUser){
         if(typeof(_Param) === "number"){
             return new Promise((resolve, reject) => {
@@ -69,8 +86,8 @@ export default class UserModel {
                                          FROM Users 
                                          WHERE "Entry" = ${_Param}`
     
-                        MSSQLService.RunQuey(SQLQuery).then((_Result: IResult<any>) => {
-                            resolve(_Result.recordset)
+                        MSSQLService.RunQuey(SQLQuery).then((_Result: IResult<IUser>) => {
+                            resolve(_Result.recordset[0])
                         }).catch((_Err) => {
                             resolve(_Err)
                         })
