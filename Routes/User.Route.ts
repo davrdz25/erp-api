@@ -21,4 +21,11 @@ export default class UserRoute {
             return response.status(500).send(_Err)
         })
     }
+
+    @Post("/Login")
+    public Login(@Body({required: true}) _Session: any, @Res() response: Response)
+    {
+        
+    }
+
 }
