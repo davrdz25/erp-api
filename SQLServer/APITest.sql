@@ -16,6 +16,7 @@ BEGIN
         isLoggedIn CHAR NOT NULL CONSTRAINT DF_Users_isLoggedIn DEFAULT 'N',
         "Password" BINARY(64) NOT NULL,
         UUID UNIQUEIDENTIFIER NOT NULL,
+        SessionID UNIQUEIDENTIFIER,
         CreateDate DATETIME NOT NULL,
         UpdateDate DATETIME,
         UserSign INT NOT NULL CONSTRAINT DF_Users_UserSign DEFAULT -1,
@@ -72,7 +73,8 @@ BEGIN
         DECLARE @Entry INT = (SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Users)
         DECLARE @UUID UNIQUEIDENTIFIER = NEWID()
 
-        INSERT INTO Users (
+        INSERT INTO Users 
+        (
             "Entry",
             "Code",
             "Name",
@@ -82,25 +84,26 @@ BEGIN
             CreateDate,
             UserSign
         )
-        VALUES (
+        VALUES 
+        (
             @Entry,
             @Code,
             @Name,
             @Comments,
-            HASHBYTES('SHA2_512', @Password + @Salt + CONVERT(NVARCHAR(36), @UUID)),
+            HASHBYTES('SHA2_512', @Code + '_' + @Password + '_' + @Salt + '_' + CONVERT(NVARCHAR(36), @UUID) + '_'),
             @UUID,
             @CreateDate,
             @UserSign
         )
 
+        SELECT 200 AS 'Number','Create user' AS 'Procedure', 'S' AS 'State', 'Success' AS 'Mesage'
+        RETURN
     END TRY
     BEGIN CATCH
         SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
         THROW
     END CATCH
 END
---INSERT INTO Users (ID, UserEntry, UserCode ,UserName,  PasswordHash, Salt, CreateDate, UserSign)
---VALUES(1,1,'sys_admin', 'Sytem Administrator', HASHBYTES('SHA2_512', 'rdx600rew..Z$zXLHN8!X2zYsgK7uT&YXU9(YoMRFTTyNAWRQdQ7Njiik7zomrrJ8RE$frWDEeB' + CONVERT(NVARCHAR(36),CONVERT(uniqueidentifier, '1a9945a7-f82b-4aaa-81be-f5135e428a56'))),CONVERT(uniqueidentifier,'1a9945a7-f82b-4aaa-81be-f5135e428a56'),GETDATE(),-1)
 GO
 /*IF NOT  EXISTS(SELECT *
 FROM INFORMATION_SCHEMA.TABLES
