@@ -1,18 +1,16 @@
 import { IResult } from "mssql";
-import { compareSync, genSaltSync, hashSync } from "bcrypt";
 import IUser from "../Interfaces/User";
 import MSSQLService from "../Services/Database";
 import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
 
 export default class UserModel {
     public static CreateUser(_NewUser: IUser){
-        const saltpass = hashSync(process.env.SaltPass as string,10)
 
         const SQLQuery: string = `EXECUTE CreateUser  
                                     '${_NewUser.Code}',
                                     '${_NewUser.Name}',
                                     ${!_NewUser.Comments ? "NULL, " : "'" +  _NewUser.Comments + "', "}
-                                    '${saltpass}', 
+                                    '${process.env.SaltPass}', 
                                     '${_NewUser.Password}', 
                                     -1,
                                     '20230501'

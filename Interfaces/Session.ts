@@ -1,7 +1,7 @@
 export default interface ISession {
     SessionID: string
-    UserEntry: number
-    UserName: string
+    Entry: number
+    Code: string
     Password: string
     LoginDate: string
 }

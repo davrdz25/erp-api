@@ -36,7 +36,7 @@ CREATE PROCEDURE CreateUser
     @Code NVARCHAR(20),
     @Name NVARCHAR(100),
     @Comments NVARCHAR(200),
-    @Salt NVARCHAR(64),
+    @Salt NVARCHAR(MAX),
     @Password NVARCHAR(254),
     @UserSign INT,
     @CreateDate DATE
@@ -98,6 +98,57 @@ BEGIN
 
         SELECT 200 AS 'Number','Create user' AS 'Procedure', 'S' AS 'State', 'Success' AS 'Mesage'
         RETURN
+    END TRY
+    BEGIN CATCH
+        SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
+        THROW
+    END CATCH
+END
+GO
+CREATE PROCEDURE CreateSession
+    @Entry INT,
+    @Code NVARCHAR(20),
+    @Password NVARCHAR(254),
+    @Salt NVARCHAR(MAX),
+    @UserSign INT,
+    @CreateDate DATE
+AS
+BEGIN
+    BEGIN TRY
+        IF(@Code = '') BEGIN
+            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','Code cannot be empty' AS 'Message';
+            RETURN
+        END
+
+        IF(@Password = '') BEGIN
+            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','Password cannot be empty' AS 'Message';
+            RETURN
+        END
+
+        IF NOT EXISTS (SELECT "Code" FROM Users WHERE "Code" = @Code)
+        BEGIN
+            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','User does''t exists' AS 'Message';
+            RETURN
+        END
+
+        IF NOT EXISTS (SELECT "Entry" FROM Users WHERE "Entry" = @Entry)
+        BEGIN
+            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','User does''t exists' AS 'Message';
+            RETURN
+        END
+
+        IF EXISTS (SELECT COUNT(*) FROM Users WHERE "Code" = @Code AND "Entry" = @Entry AND "Password" =  HASHBYTES('SHA2_512', @Code + '_' + @Password + '_' + @Salt + '_' + CONVERT(NVARCHAR(36), UUID) + '_'))
+        BEGIN
+            DECLARE @SessionID UNIQUEIDENTIFIER = NEWID()
+
+            UPDATE Users SET SessionID = @SessionID, isLoggedIn = 'Y' WHERE "Code" = @Code AND "Entry" = @Entry
+
+            SELECT 200 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','Invalid password' AS 'Message';
+            RETURN
+        END
+        ELSE
+            SELECT 401 AS 'Number','CreateSession' AS 'Procedure', 'F' AS 'State', 'Invalid credentials' AS 'Mesage'
+            RETURN
     END TRY
     BEGIN CATCH
         SELECT  500 AS 'Number',ERROR_PROCEDURE() AS 'Procedure',ERROR_STATE() as 'State', ERROR_MESSAGE() AS 'Message';
