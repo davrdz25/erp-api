@@ -8,6 +8,7 @@ export default class UserModel {
         const SQLQuery: string = `EXECUTE CreateUser  
                                     '${_NewUser.Code}',
                                     '${_NewUser.Name}',
+                                    '${_NewUser.Email}',
                                     ${!_NewUser.Comments ? "NULL, " : "'" +  _NewUser.Comments + "', "}
                                     '${process.env.SaltPass}', 
                                     '${_NewUser.Password}', 
