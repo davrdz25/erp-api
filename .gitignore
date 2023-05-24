@@ -2,3 +2,4 @@
 /node_modules
 sqltools*
 /QRCodes
+.env
