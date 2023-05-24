@@ -108,7 +108,7 @@ BEGIN
             @Name,
             @Email,
             @Comments,
-            HASHBYTES('SHA2_512', @Code + ',_,' + @Email + ',_,' + @Password + ',_,' + @Salt + ',_,' + CONVERT(NVARCHAR(36), @UUID) + '_'),
+            HASHBYTES('SHA2_512', @Code + ',_,' + @Email + ',_,' + @Password + ',_,' + @Salt + ',_,' + CONVERT(NVARCHAR(36), @UUID) + ',_,'),
             @UUID,
             @CreateDate,
             @UserSign
@@ -126,6 +126,7 @@ GO
 CREATE PROCEDURE CreateSession
     @Entry INT,
     @Code NVARCHAR(20),
+    @Email NVARCHAR(150),
     @Password NVARCHAR(254),
     @Salt NVARCHAR(MAX),
     @UserSign INT,
@@ -138,6 +139,11 @@ BEGIN
             RETURN
         END
 
+        IF(@Email = '') BEGIN
+            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','Email cannot be empty' AS 'Message';
+            RETURN
+        END
+
         IF(@Password = '') BEGIN
             SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','Password cannot be empty' AS 'Message';
             RETURN
@@ -145,17 +151,17 @@ BEGIN
 
         IF NOT EXISTS (SELECT "Code" FROM Users WHERE "Code" = @Code)
         BEGIN
-            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','User does''t exists' AS 'Message';
+            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','Code does''t exists' AS 'Message';
             RETURN
         END
 
-        IF NOT EXISTS (SELECT "Entry" FROM Users WHERE "Entry" = @Entry)
+        IF NOT EXISTS (SELECT "Email" FROM Users WHERE "Email" = @Email)
         BEGIN
-            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','User does''t exists' AS 'Message';
+            SELECT 400 AS 'Number','CreateSession' AS 'Procedure','F' AS 'State','Email does''t exists' AS 'Message';
             RETURN
         END
 
-        IF EXISTS (SELECT COUNT(*) FROM Users WHERE "Code" = @Code AND "Entry" = @Entry AND "Password" =  HASHBYTES('SHA2_512', @Code + '_' + @Password + '_' + @Salt + '_' + CONVERT(NVARCHAR(36), UUID) + '_'))
+        IF EXISTS (SELECT COUNT(*) FROM Users WHERE "Code" = @Code AND "Entry" = @Entry AND "Email" = @Email AND "Password" =  HASHBYTES('SHA2_512', @Code + ',_,' + @Email + ',_,' + @Password + ',_,' + @Salt + ',_,' + CONVERT(NVARCHAR(36), UUID) + ',_,'))
         BEGIN
             DECLARE @SessionID UNIQUEIDENTIFIER = NEWID()
 

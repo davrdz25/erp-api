@@ -12,7 +12,6 @@ GET http://localhost:3001/api/v1/Accounts?Name=aho&ExactValues=N
 GET http://localhost:3001/api/v1/Accounts?Entry=1
 GET http://localhost:3001/api/v1/Users
 
-
 GET http://localhost:3001/api/v1/QRCode
 
 POST http://localhost:3001/api/v1/Session HTTP/1.1
@@ -21,6 +20,7 @@ content-Type: application/json
 {
     "Entry": 1,
     "Code": "sys_admin",
+    "Email": "rdx600rew..",
     "Password": "sodfhsldkf",
     "LoginDate": "20210101"
 }
@@ -31,6 +31,7 @@ content-Type: application/json
 {
     "Code": "sys_dev",
     "Name": "System development",
+    "Email": "sys@sys.com",
     "Password": "rdx600rew..",
     "UserSign": 1,
     "CreateDate": "20230101"
