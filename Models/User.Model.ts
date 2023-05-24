@@ -77,6 +77,7 @@ export default class UserModel {
                         const SQLQuery = `SELECT "Entry",
                                          "Code",
                                          "Name",
+                                         Email,
                                          Comments,
                                          isLocked,
                                          isActive,
