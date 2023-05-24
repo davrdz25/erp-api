@@ -8,9 +8,10 @@ BEGIN
     CREATE TABLE Users
     (
         "Entry" INT NOT NULL,
-        "Code" VARCHAR(20) NOT NULL,
-        "Name" VARCHAR(100) NOT NULL,
-        Comments VARCHAR(200),
+        "Code" NVARCHAR(20) NOT NULL,
+        "Name" NVARCHAR(100) NOT NULL,
+        Email NVARCHAR(150) NOT NULL,
+        Comments NVARCHAR(200),
         isLocked CHAR NOT NULL CONSTRAINT DF_Users_isLocked DEFAULT 'N',
         isActive CHAR NOT NULL CONSTRAINT DF_Users_isActive DEFAULT 'Y',
         isLoggedIn CHAR NOT NULL CONSTRAINT DF_Users_isLoggedIn DEFAULT 'N',
@@ -24,6 +25,9 @@ BEGIN
         CONSTRAINT CHK_Users_Entry CHECK ("Entry" >= 1),
         CONSTRAINT UQ_Users_Code UNIQUE ("Code"),
         CONSTRAINT UQ_Users_Name UNIQUE ("Name"),
+        CONSTRAINT UQ_Users_Email UNIQUE (Email),
+        CONSTRAINT UQ_Users_UUID UNIQUE (UUID),
+        CONSTRAINT UQ_Users_SessionID UNIQUE (SessionID),
         CONSTRAINT UQ_Users_CodeName UNIQUE("Code", "Name"),
         CONSTRAINT CHK_Users_Locked CHECK (isLocked IN ('Y','N')),
         CONSTRAINT CHK_Users_Active CHECK (isActive IN ('Y','N')),
@@ -32,9 +36,10 @@ BEGIN
     );
 END
 GO
-CREATE PROCEDURE CreateUser
+ALTER PROCEDURE CreateUser
     @Code NVARCHAR(20),
     @Name NVARCHAR(100),
+    @Email NVARCHAR(150),
     @Comments NVARCHAR(200),
     @Salt NVARCHAR(MAX),
     @Password NVARCHAR(254),
@@ -58,6 +63,11 @@ BEGIN
             RETURN
         END
 
+        IF(@Email = '') BEGIN
+            SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Email cannot be empty' AS 'Message';
+            RETURN
+        END
+
         IF EXISTS (SELECT * FROM Users WHERE "Code" = @Code)
         BEGIN
             SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Code already exists' AS 'Message';
@@ -70,6 +80,12 @@ BEGIN
             RETURN
         END
 
+        IF EXISTS (SELECT * FROM Users WHERE "Email" = @Email)
+        BEGIN
+            SELECT 500 AS 'Number','CreateUser' AS 'Procedure','F' AS 'State','Email already exists' AS 'Message';
+            RETURN
+        END
+
         DECLARE @Entry INT = (SELECT ISNULL(MAX("Entry"), 0) + 1 "Entry" FROM Users)
         DECLARE @UUID UNIQUEIDENTIFIER = NEWID()
 
@@ -78,6 +94,7 @@ BEGIN
             "Entry",
             "Code",
             "Name",
+            Email,
             Comments,
             "Password",
             UUID,
@@ -89,8 +106,9 @@ BEGIN
             @Entry,
             @Code,
             @Name,
+            @Email,
             @Comments,
-            HASHBYTES('SHA2_512', @Code + ',_,' + @Password + ',_,' + @Salt + ',_,' + CONVERT(NVARCHAR(36), @UUID) + '_'),
+            HASHBYTES('SHA2_512', @Code + ',_,' + @Email + ',_,' + @Password + ',_,' + @Salt + ',_,' + CONVERT(NVARCHAR(36), @UUID) + '_'),
             @UUID,
             @CreateDate,
             @UserSign
