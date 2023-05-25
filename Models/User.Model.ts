@@ -2,7 +2,6 @@ import { IResult } from "mssql";
 import IUser from "../Interfaces/User";
 import MSSQLService from "../Services/Database";
 import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
-import { createCipheriv, createHmac,randomBytes } from "crypto";
 import Encryption from "../Services/Encyption";
 
 export default class UserModel {
@@ -12,7 +11,7 @@ export default class UserModel {
                                     '${_NewUser.Name}',
                                     '${_NewUser.Email}',
                                     ${!_NewUser.Comments ? "NULL, " : "'" +  _NewUser.Comments + "', "}
-                                    '${Encryption.EncryptString(process.env.SaltPass as string).encryptedData}',
+                                    '${Encryption.EncryptString(_NewUser.Password)}',
                                     '${_NewUser.Password}', 
                                     -1,
                                     '20230501'
