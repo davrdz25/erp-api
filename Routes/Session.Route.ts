@@ -3,7 +3,7 @@ import ISession from "../Interfaces/Session";
 import SessionModel from "../Models/Session.Model";
 import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
 
-@JsonController("Session")
+@JsonController("Login")
 export default class SessionRoute {
     @Post()
     public Add(@Body({required: true}) _Session: ISession, @Res() response: any ){

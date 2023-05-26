@@ -11,7 +11,7 @@ export default class UserModel {
                                     '${_NewUser.Name}',
                                     '${_NewUser.Email}',
                                     ${!_NewUser.Comments ? "NULL, " : "'" +  _NewUser.Comments + "', "}
-                                    '${Encryption.EncryptString(_NewUser.Password)}',
+                                    '${process.env.SaltPass}',
                                     '${_NewUser.Password}', 
                                     -1,
                                     '20230501'
