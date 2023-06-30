@@ -1,8 +1,6 @@
 import { Body, Get, Header, JsonController, Param, Post, QueryParam, Res } from "routing-controllers";
 import IUser from "../Interfaces/User";
 import UserModel from "../Models/User.Model";
-import SessionModel from "../Models/Session.Model";
-import ISession from "../Interfaces/Session";
 
 @JsonController("Users")
 export default class UserRoute {
