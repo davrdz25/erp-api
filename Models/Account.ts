@@ -100,6 +100,65 @@ export default class AccountModel {
         })
     }
 
+    public static SearchParams(_Param: string) {
+        let Filter: any[] = []
+
+        if (_Param.includes('Name')) {
+            Filter.push("\"Name\" = '" + _Param + "' ")
+        }
+
+        if (_Param.includes('Code')) {
+            Filter.push("\"Code\" = '" + _Param + "' ")
+        }
+        
+        if (_Param.includes('Level')) {
+            Filter.push("\"Level\" = " + _Param  + " ")
+        }
+
+        if (_Param.includes('Father')) {
+            Filter.push("\"Father\" = " + _Param  + " ")
+        }
+
+        if (_Param.includes('PostableAcct')) {
+            Filter.push("\"PostableAcct\" = " + _Param  + " ")
+        }
+
+        const SQLQuery = "SELECT ROW_NUMBER() OVER(ORDER BY \"Entry\") AS \"Key\", "
+            + "\"Entry\", "
+            + "\"Code\", "
+            + "\"Name\", "
+            + "\"Level\", "
+            + "\"Type\", "
+            + "PostableAcct, "
+            + "FatherEntry, "
+            + "Balance, "
+            + "UserSign, "
+            + "CreateDate, "
+            + "UpdateDate "
+            + "FROM Accounts "
+            + "WHERE " + (Filter.join(" AND "))
+
+            console.log(SQLQuery)
+        return new Promise((resolve, reject) => {
+            MSSQLService.RunQuey(SQLQuery).then((_Accounts) => {
+                if (_Accounts.recordset.length !== 0) {
+                    _Accounts.recordsets[0].map((_acct: any) => {
+                        if(_acct.PostableAcct === 'Y'){
+                            _acct.PostableAcct = true
+                        } else {
+                            _acct.PostableAcct = false
+                        }
+                    })
+                    resolve(_Accounts.recordset)
+                } else {
+                    reject({ Message: "No accounts found" })
+                }
+            }).catch((_Err) => {
+                reject(_Err)
+            })
+        })
+    }
+
     public static EntryExists(_Param: IAccount) {
         const SQLQuery = "SELECT ISNULL(COUNT(*),0) Register "
             + "FROM Accounts "
@@ -174,22 +233,30 @@ export default class AccountModel {
 
     public static Create(_Account: IAccount) {
         if (!_Account.Name) {
+            console.log( `Name`)
             throw ({ Message: "Name cannot be empty" })
         }
 
         if (_Account.Name && _Account.Name.length > 100) {
+            console.log( `Name 1`)
+
             throw ({ Messge: "Name cannot be more than 100 characters" })
         }
 
         if (_Account.Father === 0 || _Account.Father < -1) {
+            console.log( `Father`)
             throw ({ Message: "Invalid value Father" })
         }
 
-        if (_Account.Level === 0 && _Account.Level < -1) {
+        if (_Account.Level === 0 && _Account.Level < -1 || _Account.Level === null || _Account.Level === undefined) {
+            console.log( `Level`)
+
             throw ({ Message: "Invalid value Level" })
         }
 
         if (_Account.Type === -1 && _Account.PostableAcct) {
+            console.log( `Postable`)
+
             throw ({ Message: "Postable account cannot be title type" })
         }
 
@@ -210,6 +277,7 @@ export default class AccountModel {
                 }
                 resolve(_Created.recordset)
             }).catch((_Err) => {
+                console.log("Catch", _Err)
                 reject({"Message": _Err.Info.message})
             })
         })

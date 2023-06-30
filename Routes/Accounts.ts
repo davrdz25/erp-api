@@ -1,4 +1,4 @@
-import { Body, Get, JsonController, Post, Put, QueryParams,Res } from "routing-controllers";
+import { Body, Get, JsonController, Param, Post, Put, QueryParams,Res } from "routing-controllers";
 import IAccount from "../Interfaces/Account";
 import AccountModel from "../Models/Account";
 import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
@@ -23,8 +23,20 @@ export default class AccountRoute {
         }
     }
 
+    @Get(":/Entry")
+    public SearchByParam(@Param("Entry") _Entry: string, @Res() response: any){
+            return AccountModel.SearchParams(_Entry).then((_Account) => {
+                return response.status(200).send(_Account)
+            }).catch((_Err) => {
+                return  response.status(500).send(_Err)
+            })
+    
+    }
+
+
     @Post()
     public Add(@Body({ required: true }) NewAccount: IAccount, @Res() response: any){
+        console.log(NewAccount)
         return AccountModel.Create(NewAccount).then((_Created: any) => {
                 return response.status(200).send(_Created)
         }).catch((_Err: StoredProcedureOutput) => {
