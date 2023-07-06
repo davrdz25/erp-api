@@ -20,7 +20,7 @@ export default class UserModel {
         
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
-                if(_Created.recordset[0].ErrNumber === 500){
+                if(_Created.recordset[0].Number === 500){
                     reject({Message: _Created.output})
                 }
                 else {

@@ -27,7 +27,7 @@ export default class AccountRoute {
     public SearchByParam(@Param("Entry") _Entry: string, @Res() response: any){
             return AccountModel.SearchParams(_Entry).then((_Account) => {
                 return response.status(200).send(_Account)
-            }).catch((_Err) => {
+            }).catch((_Err: StoredProcedureOutput) => {
                 return  response.status(500).send(_Err)
             })
     
@@ -40,7 +40,8 @@ export default class AccountRoute {
         return AccountModel.Create(NewAccount).then((_Created: any) => {
                 return response.status(200).send(_Created)
         }).catch((_Err: StoredProcedureOutput) => {
-            return response.status(500).send(_Err)
+            console.log("Error", _Err.Body)
+            return response.status(_Err.Number).send(_Err.Body)
         })
     }
 
