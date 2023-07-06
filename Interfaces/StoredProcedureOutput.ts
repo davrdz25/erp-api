@@ -1,6 +1,8 @@
 export default interface StoredProcedureOutput {
-    ErrNumber: number,
-    ProcName: string,
+    Number: number,
+    Body: {
+    Procedure: string,
     State: string,
     Message: string;
+    }
 }
