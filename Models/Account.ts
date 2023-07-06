@@ -138,7 +138,6 @@ export default class AccountModel {
             + "FROM Accounts "
             + "WHERE " + (Filter.join(" AND "))
 
-            console.log(SQLQuery)
         return new Promise((resolve, reject) => {
             MSSQLService.RunQuey(SQLQuery).then((_Accounts) => {
                 if (_Accounts.recordset.length !== 0) {
@@ -232,35 +231,28 @@ export default class AccountModel {
     }
 
     public static Create(_Account: IAccount) {
-        if (!_Account.Name) {
-            console.log( `Name`)
-            throw ({ Message: "Name cannot be empty" })
-        }
-
-        if (_Account.Name && _Account.Name.length > 100) {
-            console.log( `Name 1`)
-
-            throw ({ Messge: "Name cannot be more than 100 characters" })
-        }
-
-        if (_Account.Father === 0 || _Account.Father < -1) {
-            console.log( `Father`)
-            throw ({ Message: "Invalid value Father" })
-        }
-
-        if (_Account.Level === 0 && _Account.Level < -1 || _Account.Level === null || _Account.Level === undefined) {
-            console.log( `Level`)
-
-            throw ({ Message: "Invalid value Level" })
-        }
-
-        if (_Account.Type === -1 && _Account.PostableAcct) {
-            console.log( `Postable`)
-
-            throw ({ Message: "Postable account cannot be title type" })
-        }
-
         return new Promise((resolve, reject) => {
+            if (!_Account.Name) {        
+                reject({Number: 400, Body:{Procedure: "Create Account", State: "F", Message: "Name cannot be empty"}})
+            }
+
+            if (_Account.Name && _Account.Name.length > 100) {
+                throw ({Number: 400, Body:{Procedure: "Create Account", State: "F", Messge: "Name cannot be more than 100 characters" }})
+            }
+    
+            if (_Account.Father === 0 || _Account.Father < -1) {
+                console.log( `Father`)
+                throw ({Number: 404, Body:{Procedure: "Create Account", State: "F",  Message: "Invalid value Father" }})
+            }
+    
+            if (_Account.Level === 0 && _Account.Level < -1 || _Account.Level === null || _Account.Level === undefined) {
+                throw ({Number: 400, Body:{Procedure: "Create Account", State: "F", Message: "Invalid value Level" }})
+            }
+    
+            if (_Account.Type === -1 && _Account.PostableAcct) {
+                throw ({Number: 400, Body:{Procedure: "Create Account", State: "F", Message: "Postable account cannot be title type" }})
+            }
+
             const SQLQuery = "EXECUTE CreateAccount" +
                 "'" + _Account.Name + "', "
                 + Number(_Account.Level) + ", "
@@ -270,15 +262,14 @@ export default class AccountModel {
                 + (_Account.PostableAcct ? "'Y', " : "'N', ")
                 + "'" + _Account.CreateDate + "'"
 
-            console.log( _Account, SQLQuery)
             MSSQLService.RunQuey(SQLQuery).then((_Created: IResult<StoredProcedureOutput>) => {
-                if (_Created.recordset[0].ErrNumber === 500) {
-                    reject({ Message: _Created.recordset })
+                if (_Created.recordset[0].Number === 500) {
+                    reject({Number: _Created.recordset[0].Number, Body: _Created.recordset[0].Body})
                 }
                 resolve(_Created.recordset)
             }).catch((_Err) => {
                 console.log("Catch", _Err)
-                reject({"Message": _Err.Info.message})
+                reject({Number: 500, Body:{Procedure: "Create Account", State: "F",Message: _Err.Info.message}})
             })
         })
     }
