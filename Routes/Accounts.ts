@@ -11,34 +11,33 @@ export default class AccountRoute {
         if ((Account.Entry !== 0 && Account.Entry >= 1 ) || Account.Name || Number(Account.Level) > 0 || (Number(Account.Type) > -1 && Number(Account.Type) !== 0)) {
             return AccountModel.Search(Account).then((_Account) => {
                 return response.status(200).send(_Account)
-            }).catch((_Err) => {
-                return  response.status(500).send(_Err)
+            }).catch((_Err: StoredProcedureOutput) => {
+                return  response.status(_Err.Number).send(_Err.Body)
             })
         } else {
             return AccountModel.GetAll().then((_Accounts) => {
                 return response.status(200).send(_Accounts)
-            }).catch((_Err) => {
-                return response.status(500).send(_Err)
+            }).catch((_Err: StoredProcedureOutput) => {
+                return response.status(_Err.Number).send(_Err.Body)
             })
         }
     }
 
     @Get(":/Entry")
     public SearchByParam(@Param("Entry") _Entry: string, @Res() response: any){
-            return AccountModel.SearchParams(_Entry).then((_Account) => {
-                return response.status(200).send(_Account)
-            }).catch((_Err: StoredProcedureOutput) => {
-                return  response.status(500).send(_Err)
-            })
+        return AccountModel.SearchParams(_Entry).then((_Account) => {
+            return response.status(200).send(_Account)
+        }).catch((_Err: StoredProcedureOutput) => {                
+            return  response.status(_Err.Number).send(_Err.Body)
+        })
     
     }
-
 
     @Post()
     public Add(@Body({ required: true }) NewAccount: IAccount, @Res() response: any){
         console.log(NewAccount)
         return AccountModel.Create(NewAccount).then((_Created: any) => {
-                return response.status(200).send(_Created)
+            return response.status(200).send(_Created)
         }).catch((_Err: StoredProcedureOutput) => {
             console.log("Error", _Err.Body)
             return response.status(_Err.Number).send(_Err.Body)

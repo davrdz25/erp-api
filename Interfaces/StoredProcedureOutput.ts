@@ -1,8 +1,8 @@
 export default interface StoredProcedureOutput {
     Number: number,
     Body: {
-    Procedure: string,
-    State: string,
-    Message: string;
+        Procedure: string,
+        State: string,
+        Message: string;
     }
 }
