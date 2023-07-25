@@ -30,13 +30,12 @@ export default class AccountModel {
                             _acct.PostableAcct = false
                         }
                     })
-
-                    resolve( _Accounts.recordset)
+                    resolve({Number: 200, Body:{Procedure: "GetAll", State: "S", Message: _Accounts.recordset}})
                 } else {
-                    reject({ Message: "No accounts found" })
+                    reject({ Number: 404, Body: {Procedure: "GetAll", State: "F",  Message: "No accounts found" }})
                 }
             }).catch((_Err) => {
-                reject(_Err)
+                reject({Number: 500, Body: {Procedure: "GetAll", State: "F", Message: _Err}})
             })
         })
     }
@@ -90,12 +89,12 @@ export default class AccountModel {
                             _acct.PostableAcct = false
                         }
                     })
-                    resolve(_Accounts.recordset)
+                    resolve({Number: 200, Body:{Procedure: "Search", State: "S", Message: _Accounts.recordset}})
                 } else {
-                    reject({ Message: "No accounts found" })
+                    reject({ Number: 404, Body: {Procedure: "Search", State: "F",  Message: "No accounts found" }})
                 }
             }).catch((_Err) => {
-                reject(_Err)
+                reject({Number: 500, Body: {Procedure: "Search", State: "F", Message: _Err}})
             })
         })
     }
@@ -148,12 +147,12 @@ export default class AccountModel {
                             _acct.PostableAcct = false
                         }
                     })
-                    resolve(_Accounts.recordset)
+                    resolve({Number: 200, Body:{Procedure: "SearchParams", State: "S", Message: _Accounts.recordset}})
                 } else {
-                    reject({ Message: "No accounts found" })
+                    reject({ Number: 404, Body: {Procedure: "SearchParams", State: "F",  Message: "No accounts found" }})
                 }
             }).catch((_Err) => {
-                reject(_Err)
+                reject({Number: 500, Body: {Procedure: "SearchParams", State: "F", Message: _Err}})
             })
         })
     }
