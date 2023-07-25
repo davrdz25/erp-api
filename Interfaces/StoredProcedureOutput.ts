@@ -3,6 +3,6 @@ export default interface StoredProcedureOutput {
     Body: {
         Procedure: string,
         State: string,
-        Message: string;
+        Message: string | {};
     }
 }
