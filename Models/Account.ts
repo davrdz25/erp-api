@@ -19,8 +19,7 @@ export default class AccountModel {
             + "UpdateDate "
             + "FROM Accounts"
 
-        return new Promise((resolve, reject) => {
-            
+        return new Promise((resolve, reject) => {          
             MSSQLService.RunQuey(SQLQuery).then((_Accounts) => {              
                 if (_Accounts.recordset.length !== 0) {      
                     _Accounts.recordsets[0].map((_acct: any) => {
