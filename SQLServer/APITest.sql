@@ -673,6 +673,16 @@ AS
             RETURN
         END
 
+        IF (@Level = 1 AND @Type <> -1) BEGIN
+            SELECT 500 AS 'Number', 'CreateAccount' AS 'Procedure', 'F' AS 'Status', 'Invalid type if Level is 1' AS 'Message';
+            RETURN
+        END
+
+        IF(@Level > 1 AND @Type = -1) BEGIN
+            SELECT 500 AS 'Number', 'CreateAccount' AS 'Procedure', 'F' AS 'Status', 'Invalid type if Level is greater than 1' AS 'Message';
+            RETURN
+        END
+
         IF (@Father = -1 AND @Level > 1) BEGIN
             SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid value father if account level is greater than 1' AS 'Message';
             RETURN
