@@ -663,23 +663,18 @@ AS
             RETURN
         END
 
-        IF(@Type = -1 AND @Postable = 'Y') BEGIN
-            SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid type if account is postable' AS 'Message';
+        IF(@Level < 1) BEGIN
+            SELECT 500 as 'Numer', 'CreateAccount' AS 'Procesure', 'F' AS 'State', 'Invalid value Level' AS 'Message';
             RETURN
         END
 
+        IF(@Type < 1) BEGIN
+            SELECT 500 as 'Numer', 'CreateAccount' AS 'Procesure', 'F' AS 'State', 'Invalid value Type' AS 'Message';
+            RETURN
+        END
+        
         IF (@Father = 0 OR @Father < -1) BEGIN
             SELECT 500 AS 'Number','CreateAccount' AS 'Procedure','F' AS 'State','Invalid value father' AS 'Message';
-            RETURN
-        END
-
-        IF (@Level = 1 AND @Type <> -1) BEGIN
-            SELECT 500 AS 'Number', 'CreateAccount' AS 'Procedure', 'F' AS 'Status', 'Invalid type if Level is 1' AS 'Message';
-            RETURN
-        END
-
-        IF(@Level > 1 AND @Type = -1) BEGIN
-            SELECT 500 AS 'Number', 'CreateAccount' AS 'Procedure', 'F' AS 'Status', 'Invalid type if Level is greater than 1' AS 'Message';
             RETURN
         END
 
