@@ -728,13 +728,6 @@ AS
         THROW
     END CATCH
 GO
-CREATE PROCEDURE CreateAccount
-    @Name NVARCHAR(100),
-    @Type INT = -1,
-    @CreateDate DATETIME
-AS
-
-GO
 CREATE PROCEDURE CreateBankAccount
     @Name NVARCHAR(100),
     @BankEntry INT = -1,
