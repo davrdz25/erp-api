@@ -5,7 +5,6 @@ import StoredProcedureOutput from "../Interfaces/StoredProcedureOutput";
 
 @JsonController('Accounts')
 export default class AccountRoute {
-
     @Get()
     public Search(@QueryParams({ required: false }) Account: IAccount, @Res() response: any){
         if ((Account.Entry !== 0 && Account.Entry >= 1 ) || Account.Name || Number(Account.Level) > 0 || (Number(Account.Type) > -1 && Number(Account.Type) !== 0)) {
